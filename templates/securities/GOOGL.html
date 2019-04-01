@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block GOOGL_head %}
+  <title>Alphabet Inc.</title>
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
+
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
+  {{ price|safe }}
+  {{ regress|safe }}
+{% endblock %}
+
+{% block GOOGL_header %}
+  <h1>Alphabet Inc.</h1>
+{% endblock %}
+
+{% block GOOGL %}
+
+<aside class='articles'>
+  <h3>Articles of Interest:</h3>
+  <ul>
+  {% for title_link in articles[title] %}
+      <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
+  {% endfor %}
+  </ul>
+</aside>
+
+<form method='POST' class='date-selector'>
+  <div class='enter'>
+    <label class='date1' for='date1'>Beg. Date:</label><input type='date' name='date1' />
+    <label class='date2' for='date2'>End Date:</label><input type='date' name='date2' />
+    <button type='submit'>Change Date</button>
+  </div>
+
+  <div class='choose'>
+    <input type='radio' name='range' value='1D' />Daily
+    <input type='radio' name='range' value='1M' checked/>1M <!--Default will always be 1M which causes problems with Choose Date-->
+    <input type='radio' name='range' value='3M' />3M
+    <input type='radio' name='range' value='6M' />6M
+    <input type='radio' name='range' value='1Y' />1Y
+    <input type='radio' name='range' value='5Y' />5Y
+    <button type='submit'>Change Date</button>
+  </div>
+</form>
+
+<section class='graphs'>
+  <div class='price'>
+    {{ div1|safe }}
+  </div>
+  <div class='regresion'>
+    {{ div2|safe }}
+  </div>
+
+</section>
+{% endblock %}

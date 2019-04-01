@@ -1,0 +1,80 @@
+body {
+  display: grid;
+  /* grid-template-columns: repeat(12, 8.33vw); */
+  grid-template-rows: repeat(6, auto); /* Nav Header Dates Graphs Articles Footer */
+}
+main { /* Main to be its own grid and flexbox inside each sûbgrid*/
+  display: grid;
+  grid-template-columns: repeat(9, 10vw);
+  grid-template-rows: repeat(3, auto);
+  grid-gap: 10px;
+}
+.date-selector {
+  grid-column: span 9;
+  grid-row: 1;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  margin-left: 35px;
+}
+.enter {
+  order: 2;
+}
+.choose {
+  order: 1;
+}
+.button {
+  margin-left: 5px;
+}
+.graphs { /* Within the main CSS styling */
+  grid-column: span 9;
+  grid-row: 2;
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-evenly;
+}
+.info {
+  grid-column: span 9; /* span equates to columns */
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(40vw, 1fr));
+  grid-template-rows: auto;
+}
+.articles {
+  /* grid-column: 1 /span 9;
+  grid-row: 3; */
+  grid-column: span 1;
+  grid-row: span 1;
+  display: flex;
+
+}
+.articles li:hover a {
+  text-decoration: none;
+  color: black;
+}
+.articles ul {
+  list-style-type: none;
+}
+/* body {
+  width:95%;
+  position: relative;
+}
+h1 {
+  padding: 0 0 0 3px;
+  margin: .5em 0 0 1em;
+}
+section {
+  width: 50vw;
+  padding-top: 2em;
+}
+.price {
+  margin-bottom: 10px;
+}
+
+aside {
+  padding: 1em;
+  border: 2px ridge rgba(0, 0, 0, .5);
+  position: absolute;
+  right: 0px;
+  width: 35vw;
+} */

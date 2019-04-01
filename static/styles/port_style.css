@@ -1,0 +1,46 @@
+body {
+  display: grid;
+} */
+
+ul label {
+  float: left;
+  width: 230px;
+  margin: 0 1em .1em 1em;
+}
+form input {
+  margin: 0 0 .1em 0;
+}
+main {
+  margin: 0px 0px 0px 10px;
+  position: relative;
+}
+section.weights {
+  margin: 20px 0 0 0;
+  float: left;
+  padding: 1em;
+  border: 2px ridge rgba(0, 0, 0, .5);
+}
+section.graph {
+  /* position: absolute;
+  width: 700px;
+  right: 25px; */
+  height: 80vh;
+}
+section>h2 {
+  font-size: 1.5em;
+  font-weight: 500;
+  text-decoration: underline;
+  margin: 10px 0px 10px 0px;
+}
+form span {
+  display: block;
+  padding: 4px;
+}
+label.date1, label.date2 {
+  padding: 0px 3px 0px 0px;
+}
+
+ul>button {
+  float: right;
+  margin: 2px 0px;
+}

@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block DJIA_head %}
+  <title>Dow Jones Industrial Average</title>
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
+
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
+  {{ price|safe }}
+{% endblock %}
+
+{% block DJIA_header %}
+  <h1>Dow Jones Industrial Average</h1>
+{% endblock %}
+
+{% block DJIA %}
+  <aside>
+    <h3>Articles of Interest:</h3>
+    <ul>
+    {% for title_link in articles[title] %}
+        <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
+    {% endfor %}
+    </ul>
+  </aside>
+
+  <section>
+    <form method='POST'>
+      <input type='radio' name='return_type' value='D' checked/>Daily
+      <input type='radio' name='return_type' value='M' />Monthly
+      <input type='radio' name='return_type' value='Y' />Yearly
+      <span>  <!-- Return_Type form appear here -->
+        <label class='date1' for='date1'>Beg. Date:</label><input type='date' name='date1' />
+        <label class='date2' for='date2'>End Date:</label><input type='date' name='date2' />
+      </span>
+      <button type='submit'>Returns</button>
+    </form>
+    <div class='price'>
+      {{ div1|safe }}
+    </div>
+
+
+  </section>
+{% endblock %}

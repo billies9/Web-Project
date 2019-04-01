@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block head %}
+<!-- Need to rework this page like the other securities -->
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link rel='stylesheet' href="{{ url_for('static', filename='styles/port_style.css') }}" />
+
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
+  <script src="http://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
+  <!-- <link rel='stylesheet' href="{{ url_for('static', filename='styles/base_style.css') }}"/> -->
+{% endblock %}
+
+{% block construct %}
+<section class='weights'>
+  <h2>Give weights to securities:</h2>
+  <form method='POST'>
+    <span>
+      <label class='date1' for='date1'>Beg. Date:</label><input type='date' name='date1' />
+      <label class='date2' for='date2'>End Date:</label><input type='date' name='date2' />
+    </span>
+
+    <ul class='securities'>
+      {% for name, ticker in stocks.items() %}
+        {% if name != 'S&P 500 Index' and name != 'Dow Jones Industrial Average': %}
+        <li>
+          <label for='{{ ticker }}'>{{ name }}:</label>
+          <input type='checkbox' name='{{ ticker }}' />
+          <input name='{{ ticker }}' type='text' />
+        </li>
+        {% endif %}
+      {% endfor %}
+
+      <button type='submit' name='Get_Weights'>Get Weights</button>
+    </ul>
+  </form>
+</section>
+
+<section class='graph'>
+  <div class='port'>
+    {{ div1|safe }}
+    {{ port|safe }}
+  </div>
+  <div>
+    <h1>hello</h1>
+    </div>
+</section>
+<section>
+{% if weights %}
+  {% for weight in weights.keys() %}
+    <li>
+      {{weight}}
+      </li>
+  {%endfor%}
+{%endif%}
+  </section>
+
+
+{% endblock %}
