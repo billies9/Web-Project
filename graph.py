@@ -57,7 +57,6 @@ class Security_Portfolio_data():
         headers = {'Accept':'application/json'}
         Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
         headers['Authorization'] = Tradier_API
-        dj = 'hdkslhasd'
         return connection, headers
 
     def type_security_content(self, frame_title, date_type = None):
