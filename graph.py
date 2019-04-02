@@ -114,61 +114,61 @@ class Security_Portfolio_data():
                 dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker]) # Weighted
         return dfclose, dfreturns
 
-def tradier_content(frame_title, dates, date_type = 'hist', weights = None):
-    connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
-    headers={'Accept':'application/json'}
-    headers['Authorization'] = Tradier_API
-    if frame_title == 'Portfolio':
-        # Create single dataframe based on weights inputs
-        if weights == None:
-            print('error - no weights given')
-        dfclose = pd.DataFrame(columns = [ticker + ' close' for ticker in weights.keys() if weights[ticker] != ''])
-        dfreturns = pd.DataFrame({ticker + ' Weighted Return':[0] for ticker in weights.keys() if weights[ticker] != ''})
-
-        i = 0
-        for column in dfclose.columns:
-            ticker = column.split(' ')[0]
-            connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'.format(ticker, dates[0], dates[1]), None, headers)
-            response = connection.getresponse()
-            content = response.read().decode("utf-8")
-            data = json.loads(content)
-            frame = pd.DataFrame(data['history']['day'])
-            if i != 0:
-                frame.set_index(pd.to_datetime(frame['date']), inplace=True)
-            dfclose[ticker + ' close'] = frame['close']
-            dfclose[ticker + ' returns'] = frame['close'].pct_change() * 100
-            if not isinstance(dfclose.index, pd.DatetimeIndex):
-                dfclose.set_index(pd.to_datetime(frame['date']), inplace = True)
-            try:
-                _ = (dfclose.loc[dates[0], ticker + ' close'] - dfclose.loc[dates[1], ticker + ' close']) / dfclose.loc[dates[1], ticker + ' close']
-                dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker])
-            except:
-                dates[1] = pd.to_datetime(dates[1])-timedelta(1)
-                _ = (dfclose.loc[dates[0], ticker + ' close'] - dfclose.loc[dates[1], ticker + ' close']) / dfclose.loc[dates[1], ticker + ' close']
-                dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker])
-            i += 1
-        return dfclose, dfreturns
-
-    if date_type=='intra':
-        # interval of tick, 1min, 5min, 15min (default)
-        connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'.format(frame_title, dates[0], dates[1], 'open'))
-        # Returns dictionary of dictionary of dictionary - keys: 'series', 'data'
-    else:
-        connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'.format(frame_title, dates[0], dates[1]), None, headers) # default interval is daily
-    # Returns dictionary of dictionary of dictionary - keys: 'history', 'day'
-    response = connection.getresponse()
-    content = response.read().decode("utf-8")
-    data = json.loads(content)
-    try:
-        df = pd.DataFrame(data['history']['day'])
-        return df.set_index('date')
-    except:
-        try:
-            df = pd.DataFrame(data['series']['data'])
-            return df.set_index('time')
-        except:
-            print('Error in retrieving information for ' + frame_title)
-            return
+# def tradier_content(frame_title, dates, date_type = 'hist', weights = None):
+#     connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
+#     headers={'Accept':'application/json'}
+#     headers['Authorization'] = Tradier_API
+#     if frame_title == 'Portfolio':
+#         # Create single dataframe based on weights inputs
+#         if weights == None:
+#             print('error - no weights given')
+#         dfclose = pd.DataFrame(columns = [ticker + ' close' for ticker in weights.keys() if weights[ticker] != ''])
+#         dfreturns = pd.DataFrame({ticker + ' Weighted Return':[0] for ticker in weights.keys() if weights[ticker] != ''})
+#
+#         i = 0
+#         for column in dfclose.columns:
+#             ticker = column.split(' ')[0]
+#             connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'.format(ticker, dates[0], dates[1]), None, headers)
+#             response = connection.getresponse()
+#             content = response.read().decode("utf-8")
+#             data = json.loads(content)
+#             frame = pd.DataFrame(data['history']['day'])
+#             if i != 0:
+#                 frame.set_index(pd.to_datetime(frame['date']), inplace=True)
+#             dfclose[ticker + ' close'] = frame['close']
+#             dfclose[ticker + ' returns'] = frame['close'].pct_change() * 100
+#             if not isinstance(dfclose.index, pd.DatetimeIndex):
+#                 dfclose.set_index(pd.to_datetime(frame['date']), inplace = True)
+#             try:
+#                 _ = (dfclose.loc[dates[0], ticker + ' close'] - dfclose.loc[dates[1], ticker + ' close']) / dfclose.loc[dates[1], ticker + ' close']
+#                 dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker])
+#             except:
+#                 dates[1] = pd.to_datetime(dates[1])-timedelta(1)
+#                 _ = (dfclose.loc[dates[0], ticker + ' close'] - dfclose.loc[dates[1], ticker + ' close']) / dfclose.loc[dates[1], ticker + ' close']
+#                 dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker])
+#             i += 1
+#         return dfclose, dfreturns
+#
+#     if date_type=='intra':
+#         # interval of tick, 1min, 5min, 15min (default)
+#         connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'.format(frame_title, dates[0], dates[1], 'open'))
+#         # Returns dictionary of dictionary of dictionary - keys: 'series', 'data'
+#     else:
+#         connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'.format(frame_title, dates[0], dates[1]), None, headers) # default interval is daily
+#     # Returns dictionary of dictionary of dictionary - keys: 'history', 'day'
+#     response = connection.getresponse()
+#     content = response.read().decode("utf-8")
+#     data = json.loads(content)
+#     try:
+#         df = pd.DataFrame(data['history']['day'])
+#         return df.set_index('date')
+#     except:
+#         try:
+#             df = pd.DataFrame(data['series']['data'])
+#             return df.set_index('time')
+#         except:
+#             print('Error in retrieving information for ' + frame_title)
+#             return
 
 
 def monthdelta(date, delta):
@@ -219,7 +219,8 @@ def build_interactive_graph(frame_title, type = None, weights = None, dates = No
             return fig
         elif type.upper() == 'R':
             data['Percent Change'] = data['close'].pct_change() * 100
-            spx_data = tradier_content(frame_title = 'SPY', dates=dates) # Use SPY as proxy for SPX
+            # Use SPY as proxy for SPX
+            spx_data = Security_Portfolio_data(dates).type_security_content(frame_title = 'SPY', date_type)
             data['SPX Pct Change'] = (spx_data['close'] * 10).pct_change() * 100
             data.dropna(inplace=True)
             df = ColumnDataSource(data={
