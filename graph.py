@@ -220,7 +220,7 @@ def build_interactive_graph(frame_title, type = None, weights = None, dates = No
         elif type.upper() == 'R':
             data['Percent Change'] = data['close'].pct_change() * 100
             # Use SPY as proxy for SPX
-            spx_data = Security_Portfolio_data(dates).type_security_content(frame_title = 'SPY', date_type)
+            spx_data = Security_Portfolio_data(dates).type_security_content('SPY', date_type)
             data['SPX Pct Change'] = (spx_data['close'] * 10).pct_change() * 100
             data.dropna(inplace=True)
             df = ColumnDataSource(data={
