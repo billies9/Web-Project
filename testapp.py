@@ -85,8 +85,10 @@ class Security():
     def build_index(self): # Re-work to resemble new codes
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
         script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates))
-        try: articles = Article_Scrape(keys = [self.ticker,])
-        except: articles = None
+        # try:
+        #     articles = self.articles[self.ticker]
+        # except:
+        articles = Article_Scrape(keys = [self.ticker,])
         if request.method == 'POST':
             dates = self.build_range_dates()
             if dates[0] is True:
