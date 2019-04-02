@@ -109,10 +109,7 @@ def covariance_matrix(df_columns, price_df = None):
 def Article_Scrape(keys, keywords_dict = link_matches, page = "https://www.wsj.com/news/markets"):
     """ Currently this scraper identifies all articles present on the webpage - inefficient to say the least. Could reverse the process by taking each key
         and using its keywords to match certain articles found in the soup.FindAll function. Then by using FindNextChild, etc. could find the relevant summary and image content."""
-    try:
-        http = urllib3.PoolManager()
-    except:
-        return None
+    http = urllib3.PoolManager()
     r = http.request("GET", page)
     soup = BeautifulSoup(r.data, "html.parser")
     article_dict = {}
