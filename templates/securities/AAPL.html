@@ -22,11 +22,11 @@
   auto-fill will maintain rules given if a few items to display; utilizes extra grid space for emptiness. fill desired.-->
   <section class='info'>
     <aside class='articles'>
-      <h3>Articles of Interest:</h3>
+      <h3 class='head'>Articles of Interest:</h3>
       {% if articles != None %}
       <ul>
         {% for title_link in articles[title] %}
-            <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
+            <li class='article'><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
         {% endfor %}
         </ul>
       {% else %}

@@ -19,22 +19,24 @@
 
 {% block GOOGL %}
 
-<aside class='articles'>
-  <h3>Articles of Interest:</h3>
-  {% if articles != None %}
-  <ul>
-    {% for title_link in articles[title] %}
-        <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
-    {% endfor %}
-    </ul>
-  {% else %}
-    <div>
-      <p>Scripts would normally scrape <a href='https://wsj.com/news/markets'>WSJ news</a> for articles that match a subset of keywords for {{title}}.
-      <a href='https://pythonanywhere.com'>PythonAnywhere</a> does not allow free accounts to conduct web scraping. Paid accounts, however,
-      do and will be looked at as a viable option for this project. </p>
-    </div>
-  {% endif %}
-</aside>
+<section class='info'>
+  <aside class='articles'>
+    <h3 class='head'>Articles of Interest:</h3>
+    {% if articles != None %}
+    <ul>
+      {% for title_link in articles[title] %}
+          <li class='article'><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
+      {% endfor %}
+      </ul>
+    {% else %}
+      <div>
+        <p>Scripts would normally scrape <a href='https://wsj.com/news/markets'>WSJ news</a> for articles that match a subset of keywords for {{title}}.
+        <a href='https://pythonanywhere.com'>PythonAnywhere</a> does not allow free accounts to conduct web scraping. Paid accounts, however,
+        do and will be looked at as a viable option for this project. </p>
+      </div>
+    {% endif %}
+  </aside>
+</section>
 
 <form method='POST' class='date-selector'>
   <div class='enter'>

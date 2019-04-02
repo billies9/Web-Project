@@ -45,8 +45,7 @@ main { /* Main to be its own grid and flexbox inside each sûbgrid*/
   grid-row: 3; */
   grid-column: span 1;
   grid-row: span 1;
-  display: flex;
-
+  /* display: flex; */
 }
 .articles li:hover a {
   text-decoration: none;
@@ -54,6 +53,10 @@ main { /* Main to be its own grid and flexbox inside each sûbgrid*/
 }
 .articles ul {
   list-style-type: none;
+  columns: 2;
+}
+.article {
+  margin: 5px 0;
 }
 /* body {
   width:95%;

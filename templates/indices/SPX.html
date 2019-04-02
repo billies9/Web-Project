@@ -17,12 +17,13 @@
 {% endblock %}
 
 {% block SPX %}
-  <aside>
-    <h3>Articles of Interest:</h3>
+<section class='info'>
+  <aside class='articles'>
+    <h3 class='head'>Articles of Interest:</h3>
     {% if articles != None %}
     <ul>
       {% for title_link in articles[title] %}
-          <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
+          <li class='article'><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
       {% endfor %}
       </ul>
     {% else %}
@@ -33,6 +34,7 @@
       </div>
     {% endif %}
   </aside>
+</section>
 
   <section>
     <form method='POST'>
