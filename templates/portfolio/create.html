@@ -2,14 +2,15 @@
 
 {% block head %}
 <!-- Need to rework this page like the other securities -->
-  <link href="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
-  <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/port_style.css') }}" />
 
-  <script src="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
-  <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
-  <script src="http://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
+  <script src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
+  <script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
+  <script src="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
   <!-- <link rel='stylesheet' href="{{ url_for('static', filename='styles/base_style.css') }}"/> -->
+      {{ port|safe }}
 {% endblock %}
 
 {% block construct %}
@@ -40,20 +41,16 @@
 <section class='graph'>
   <div class='port'>
     {{ div1|safe }}
-    {{ port|safe }}
   </div>
-  <div>
-    <h1>hello</h1>
-    </div>
 </section>
 <section>
-{% if weights %}
-  {% for weight in weights.keys() %}
-    <li>
-      {{weight}}
-      </li>
-  {%endfor%}
-{%endif%}
+  {% if weights %}
+    {% for weight in weights.keys() %}
+      <li>
+        {{weight}}
+        </li>
+    {%endfor%}
+  {%endif%}
   </section>
 
 
