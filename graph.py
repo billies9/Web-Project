@@ -53,7 +53,8 @@ class Security_Portfolio_data():
         #maybe put dates, frame_title here
 
     def create_connection(self):
-        connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
+        connection = client.HTTPSConnection('proxy.server', 3128, timeout= 30)
+        connection.set_tunnel('sandbox.tradier.com', 443) # need to add proxy.server:3128 here
         headers = {'Accept':'application/json'}
         Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
         headers['Authorization'] = Tradier_API
