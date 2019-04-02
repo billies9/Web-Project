@@ -2,13 +2,13 @@
 
 {% block UAA_head %}
   <title>Under Armour Inc.</title>
-  <link href="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
-  <link href="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
+  <link href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
 
-  <script src="http://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
-  <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
-  <script src="http://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
+  <script src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
+  <script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
+  <script src="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
 
   {{ price|safe }}
   {{ regress|safe }}
@@ -21,11 +21,19 @@
 {% block UAA %}
 <aside class='articles'>
   <h3>Articles of Interest:</h3>
-  <ul>
-  {% for title_link in articles[title] %}
-      <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
-  {% endfor %}
-  </ul>
+  {% if articles != None %}
+    <ul>
+    {% for title_link in articles[title] %}
+        <li><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <div>
+      <p>Scripts would normally scrape <a href='https://wsj.com/news/markets'>WSJ news</a> for articles that match a subset of keywords for {{title}}.
+        <a href='https://pythonanywhere.com'>PythonAnywhere</a> does not allow free accounts to conduct web scraping. Paid accounts, however,
+        do and will be looked at as a viable option for this project. </p>
+      </div>
+  {% endif %}
 </aside>
 
 <form method='POST' class='date-selector'>
