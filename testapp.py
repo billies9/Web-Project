@@ -42,7 +42,7 @@ class Security():
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
         # script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates)) # Log default dates of last 1M
         # script2, div2 = components(build_interactive_graph(self.ticker, 'R', dates = dates))
-        script1 = Build_graph(self.ticker, dates).price_graph('hist')
+        script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
         try:
             articles = Article_Scrape(keys = [self.ticker,])
         except:
@@ -75,7 +75,7 @@ class Security():
                                         stocks=mapping,
                                         resources=CDN.render())
             else:
-                script1 = Build_graph(self.ticker, dates).price_graph('hist')
+                script1 = Build_graph(self.ticker, dates).price_graph()
                 # script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'P', date_type = dates[1])) # Custom dates as given by the user
                 # script2, div2 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'R', date_type = dates[1])) # Replace former graphs with custom date ranges
         return render_template('securities/' + self.ticker + '.html',
