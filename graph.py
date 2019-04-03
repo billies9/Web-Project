@@ -23,6 +23,7 @@ from bokeh.transform import linear_cmap
 import plotly
 import plotly.plotly as py
 import plotly.graph_objs as go
+import scipy.stats as stats
 
 # Alpha_Vantage_API = '2IJFMFJU2M5IDU6N'
 Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
@@ -50,9 +51,10 @@ mapping = {"Microsoft Corp.": "MSFT",
 #     client = TiingoClient(config)
 #     return client
 class Security_Portfolio_data():
-    def __init__(self, dates):
+    def __init__(self, dates_type):
         # self.frame_title = frame_title
-        self.dates = dates
+        self.dates = dates_type[0]
+        self.date_type = dates_type[1]
         #maybe put dates, frame_title here
 
     def create_connection(self):
@@ -64,8 +66,8 @@ class Security_Portfolio_data():
         headers['Authorization'] = Tradier_API
         return connection, headers
 
-    def type_security_content(self, frame_title, date_type = 'hist'):
-        if date_type == 'hist':
+    def type_security_content(self, frame_title):
+        if self.date_type == 'hist':
             if frame_title == 'SPX': frame_title = 'SPY'
             elif frame_title == 'DJIA': frame_title = 'DIA'
             return self.hist_security_content(frame_title)
@@ -76,38 +78,30 @@ class Security_Portfolio_data():
 
     def intra_security_content(self, frame_title):
         connection, headers = self.create_connection()
-        connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'.format(frame_title, self.dates[0], self.dates[1], 'open'), None, headers)
+        (connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'
+                        .format(frame_title, self.dates[0], self.dates[1], 'open'), None, headers))
 
         data = self.load_security_content(connection)
         df = pd.DataFrame(data['series']['data'])
         df['time'] = pd.to_datetime(df['time'])
+        connection.close()
         return df.set_index('time')
 
     def hist_security_content(self, frame_title):
         connection, headers = self.create_connection()
-        connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'.format(frame_title, self.dates[0], self.dates[1]), None, headers)
+        (connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'
+                        .format(frame_title, self.dates[0], self.dates[1]), None, headers))
 
         data = self.load_security_content(connection)
         df = pd.DataFrame(data['history']['day'])
         df['date'] = pd.to_datetime(df['date'])
+        connection.close()
         return df.set_index('date')
 
     def load_security_content(self, connection):
         response = connection.getresponse()
         content = response.read().decode("utf-8")
-        try:
-            data = json.loads(content)
-            print('here')
-        except:
-            _ = json.dumps(content)
-            data = json.loads(_)
-            print('there')
-        # try:
-        #     content = response.read().decode("utf-8")
-        #     print(type(content))
-        #     data = json.loads(content)
-        # except:
-        #     data = json.loads(response.read())
+        data = json.loads(content)
         return data
 
     def portfolio_content(self, weights = None):
@@ -131,8 +125,9 @@ class Security_Portfolio_data():
         return dfclose, dfreturns
 
 class Build_graph():
-    def __init__(self, ticker, dates):
-        self.dates = dates
+    def __init__(self, ticker, dates_type):
+        self.dates = dates_type[0]
+        self.date_type = dates_type[1]
         self.ticker = ticker
         if self.ticker =='SPX':
             self.ticker = 'SPY'
@@ -143,33 +138,44 @@ class Build_graph():
         else:
             self.multiplier = 1
 
-    def price_graph(self, date_type):
-        data = Security_Portfolio_data(self.dates).type_security_content(self.ticker, date_type)
+    def price_graph(self):
+        data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content(self.ticker)
         data['close'] = data['close'] * self.multiplier
 
-        trace = go.Scatter(
+        plot = go.Scatter(
                 x = data.index,
                 y = data['close'],
                 mode = 'lines'
         )
-        end_data = [trace]
+        end_data = [plot]
         graph = json.dumps(end_data, cls=plotly.utils.PlotlyJSONEncoder)
         return graph
 
-    def regression_graph(self, date_type):
-        data = Security_Portfolio_data(self.dates).type_security_content(self.ticker, date_type)
+    def regression_graph(self):
+        data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content(self.ticker)
         data['Percent Change'] = data['close'].pct_change() * 100
         # Use SPY as proxy for SPX
-        spx_data = Security_Portfolio_data(dates).type_security_content('SPY', date_type)
+        spx_data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content('SPY')
         data['SPX Pct Change'] = (spx_data['close'] * 10).pct_change() * 100
         data.dropna(inplace=True)
 
-        trace = go.Scatter(
+        plot = go.Scatter(
                 x = data['SPX Pct Change'],
-                y = data['Percent Change']
+                y = data['Percent Change'],
+                mode = 'markers',
+                name = self.ticker + ' Daily Change'
         )
-        end_data = [trace]
-        graph = json.dumps(end_data, cls=plotly.utils.PlotlyJSONEnconder)
+        slope, intercept, r_value, p_value, std_err = stats.linregress(data['SPX Pct Change'], data['Percent Change'])
+
+        fit = go.Scatter(
+                  x=data['SPX Pct Change'],
+                  y=slope * data['SPX Pct Change'] + intercept,
+                  mode='lines',
+                  marker=go.scatter.Marker(color='rgb(0, 0, 0)'),
+                  name='Beta: ' + str(round(slope, 4)) + '\n' + 'Alpha: ' + str(round(intercept, 4))
+                  )
+        end_data = [plot, fit]
+        graph = json.dumps(end_data, cls=plotly.utils.PlotlyJSONEncoder)
         return graph
 
     def portfolio_graph(self, weights):
