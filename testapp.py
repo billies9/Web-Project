@@ -5,7 +5,7 @@ app = Flask(__name__)
 # import routes
 from flask import render_template, request, url_for, redirect, flash
 import matplotlib.pyplot as plt
-from graph import build_static_graph, regression, build_interactive_graph
+from graph import build_interactive_graph, Build_graph
 from bokeh.embed import components
 from bokeh.resources import CDN
 from portfolio_page_construction import import_names, Article_Scrape
@@ -40,26 +40,25 @@ class Security():
 
     def build_security(self):
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
-        script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates)) # Log default dates of last 1M
-        script2, div2 = components(build_interactive_graph(self.ticker, 'R', dates = dates))
-<<<<<<< HEAD
+        # script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates)) # Log default dates of last 1M
+        # script2, div2 = components(build_interactive_graph(self.ticker, 'R', dates = dates))
+        script1 = Build_graph(self.ticker, dates).price_graph('hist')
         try:
             articles = Article_Scrape(keys = [self.ticker,])
         except:
             articles = None
-=======
-        try: articles = Article_Scrape(keys = [self.ticker,])
-        except: articles = None
->>>>>>> parent of 3a269c6... Catch connection exception
+
+        # try: articles = Article_Scrape(keys = [self.ticker,])
+        # except: articles = None
         if request.method == 'POST':
             dates = self.build_range_dates()
             if dates[0] is True:
                 return render_template('securities/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        div1=div1,
-                                        regress=script2,
-                                        div2=div2,
+                                        # div1=div1,
+                                        # regress=script2,
+                                        # div2=div2,
                                         articles=articles,
                                         stocks=mapping,
                                         error=dates[0],
@@ -69,21 +68,22 @@ class Security():
                 return render_template('securities/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        div1=div1,
-                                        regress=script2,
-                                        div2=div2,
+                                        # div1=div1,
+                                        # regress=script2,
+                                        # div2=div2,
                                         articles=articles,
                                         stocks=mapping,
                                         resources=CDN.render())
             else:
-                script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'P', date_type = dates[1])) # Custom dates as given by the user
-                script2, div2 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'R', date_type = dates[1])) # Replace former graphs with custom date ranges
+                script1 = Build_graph(self.ticker, dates).price_graph('hist')
+                # script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'P', date_type = dates[1])) # Custom dates as given by the user
+                # script2, div2 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'R', date_type = dates[1])) # Replace former graphs with custom date ranges
         return render_template('securities/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
-                                div1=div1,
-                                regress=script2,
-                                div2=div2,
+                                # div1=div1,
+                                # regress=script2,
+                                # div2=div2,
                                 articles=articles,
                                 stocks=mapping,
                                 resources=CDN.render())
