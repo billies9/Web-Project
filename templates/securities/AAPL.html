@@ -71,8 +71,11 @@
         Plotly.plot('price',graphs,{});
       </script>
     </div>
-    <!-- <div class='regresion'>
-      {{ div2|safe }}
-    </div> -->
+    <div id='regression' class='regression'>
+      <script>
+        var graphs = {{regress | safe}};
+        Plotly.plot('regression',graphs,{});
+      </script>
+    </div>
   </section>
 {% endblock %}
