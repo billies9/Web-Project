@@ -9,8 +9,13 @@
   <script src="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.js"></script>
   <script src="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.js"></script>
   <script src="https://cdn.pydata.org/bokeh/release/bokeh-tables-1.0.4.min.js"></script>
-  {{ price|safe }}
-  {{ regress|safe }}
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://d14fo0winaifog.cloudfront.net/plotly-basic.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <!-- {{ price|safe }}
+  {{ regress|safe }} -->
 {% endblock %}
 
 {% block MSFT_header %}
@@ -56,12 +61,15 @@
 </form>
 
 <section class='graphs'>
-  <div class='price'>
-    {{ div1|safe }}
+  <div id='price' class='price'>
+    <script>
+      var graphs = {{price | safe}};
+      Plotly.plot('price',graphs,{});
+    </script>
   </div>
-  <div class='regresion'>
+  <!-- <div class='regresion'>
     {{ div2|safe }}
-  </div>
+  </div> -->
 
 </section>
 {% endblock %}
