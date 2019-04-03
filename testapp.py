@@ -43,6 +43,7 @@ class Security():
         # script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates)) # Log default dates of last 1M
         # script2, div2 = components(build_interactive_graph(self.ticker, 'R', dates = dates))
         script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
+        script2 = Build_graph(self.ticker, (dates, 'hist')).regression_graph()
         try:
             articles = Article_Scrape(keys = [self.ticker,])
         except:
@@ -57,7 +58,7 @@ class Security():
                                         title=self.ticker,
                                         price=script1,
                                         # div1=div1,
-                                        # regress=script2,
+                                        regress=script2,
                                         # div2=div2,
                                         articles=articles,
                                         stocks=mapping,
@@ -69,20 +70,21 @@ class Security():
                                         title=self.ticker,
                                         price=script1,
                                         # div1=div1,
-                                        # regress=script2,
+                                        regress=script2,
                                         # div2=div2,
                                         articles=articles,
                                         stocks=mapping,
                                         resources=CDN.render())
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
+                script2 = Build_graph(self.ticker, dates).regression_graph()
                 # script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'P', date_type = dates[1])) # Custom dates as given by the user
                 # script2, div2 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'R', date_type = dates[1])) # Replace former graphs with custom date ranges
         return render_template('securities/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
                                 # div1=div1,
-                                # regress=script2,
+                                regress=script2,
                                 # div2=div2,
                                 articles=articles,
                                 stocks=mapping,
@@ -90,7 +92,8 @@ class Security():
 
     def build_index(self): # Re-work to resemble new codes
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
-        script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates))
+        # script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates))
+        script1 = Build_graph(self.ticker, dates).price_graph()
         try:
             articles = Article_Scrape(keys = [self.ticker,])
         except:
@@ -101,7 +104,7 @@ class Security():
                 return render_template('indices/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        div1=div1,
+                                        # div1=div1,
                                         articles=articles,
                                         stocks=mapping,
                                         error=dates[0],
@@ -111,16 +114,17 @@ class Security():
                 return render_template('indices/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        div1=div1,
+                                        # div1=div1,
                                         articles=articles,
                                         stocks=mapping,
                                         resources=CDN.render())
             else:
-                script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates, type = 'P')) # Custom dates as given by the user
+                # script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates, type = 'P')) # Custom dates as given by the user
+                script1 = Build_graph(self.ticker, dates).price_graph()
         return render_template('indices/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
-                                div1=div1,
+                                # div1=div1,
                                 articles=articles,
                                 stocks=mapping,
                                 resources=CDN.render())
