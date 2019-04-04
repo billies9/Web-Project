@@ -145,10 +145,26 @@ class Build_graph():
         plot = go.Scatter(
                 x = data.index,
                 y = data['close'],
-                mode = 'lines'
+                mode = 'lines',
+                hoverinfo = 'y'
+        )
+        layout = go.Layout(
+                    title = self.ticker + ' Price Chart',
+                    yaxis = go.layout.YAxis(
+                        title = 'Price',
+                        automargin = True
+                    ),
+                    xaxis = go.layout.XAxis(
+                        title = 'Date',
+                        automargin = True
+                    ),
+                    height = 650,
+                    width = 650
+
         )
         end_data = [plot]
-        graph = json.dumps(end_data, cls=plotly.utils.PlotlyJSONEncoder)
+        fig = go.Figure(data = end_data, layout = layout)
+        graph = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graph
 
     def regression_graph(self):
@@ -163,6 +179,7 @@ class Build_graph():
                 x = data['SPX Pct Change'],
                 y = data['Percent Change'],
                 mode = 'markers',
+                hoverinfo='y',
                 name = self.ticker + ' Daily Change'
         )
         slope, intercept, r_value, p_value, std_err = stats.linregress(data['SPX Pct Change'], data['Percent Change'])
@@ -171,10 +188,29 @@ class Build_graph():
                   x=data['SPX Pct Change'],
                   y=slope * data['SPX Pct Change'] + intercept,
                   mode='lines',
+                  hoverinfo = 'x',
                   marker=go.scatter.Marker(color='rgb(0, 0, 0)'),
                   name='Beta: ' + str(round(slope, 4)) + '\n' + 'Alpha: ' + str(round(intercept, 4))
                   )
         end_data = [plot, fit]
+
+        layout = go.Layout(
+                    title = self.ticker + ' Regression Chart',
+                    yaxis = go.layout.YAxis(
+                        title = self.ticker + ' Daily Returns',
+                        tickformat = ',.0%',
+                        # hoverformat = '.4f',
+                        automargin = True
+                    ),
+                    xaxis = go.layout.XAxis(
+                        title = 'SPX Daily Return',
+                        tickformat = ',.4%'
+                    ),
+                    height = 650,
+                    width = 650
+
+        )
+        fig = go.Figure(data = end_data, layout = layout)
         graph = json.dumps(end_data, cls=plotly.utils.PlotlyJSONEncoder)
         return graph
 
