@@ -68,13 +68,13 @@
       <!-- {{ div1|safe }} -->
       <script>
         var graphs = {{price | safe}};
-        Plotly.plot('price',graphs,{});
+        Plotly.react('price', graphs, {}, {responsive:true});
       </script>
     </div>
     <div id='regression' class='regression'>
       <script>
         var graphs = {{regress | safe}};
-        Plotly.plot('regression',graphs,{});
+        Plotly.react('regression', graphs, {}, {responsive:true});
       </script>
     </div>
   </section>
