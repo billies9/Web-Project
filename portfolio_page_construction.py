@@ -4,7 +4,7 @@ import pandas as pd
 import numpy as np
 import urllib3
 from bs4 import BeautifulSoup
-from templates.portfolio.indices import link_matches
+# from New import link_matches
 from collections import OrderedDict
 
 #with open(r'C:\Users\billies9\OneDrive\Documents\Python_Screwaround\Stock_Scraper\Good_Project\Stocks.pickle', 'rb') as file:
@@ -106,36 +106,36 @@ def covariance_matrix(df_columns, price_df = None):
     except:
         return result.var()
 
-def Article_Scrape(keys, keywords_dict = link_matches, page = "https://www.wsj.com/news/markets"):
-    """ Currently this scraper identifies all articles present on the webpage - inefficient to say the least. Could reverse the process by taking each key
-        and using its keywords to match certain articles found in the soup.FindAll function. Then by using FindNextChild, etc. could find the relevant summary and image content."""
-    http = urllib3.PoolManager()
-    r = http.request("GET", page)
-    soup = BeautifulSoup(r.data, "html.parser")
-    article_dict = {}
-    #print(soup.findAll("a", {"class": "wsj-headline-link"}))
-    for _ in soup.findAll("a", {"class": "wsj-headline-link"}):
-        """ a is child of h3. h3 is sibling of div container holding image.
-        Aforementioned div is a container of div of meta with desired content url.
-        For desired summary, findAll p.wsj-summary sibling to h3.wsj-headline
-        """
-        article_dict[_.text] = _.get('href')
-    #print(article_dict)
-    rel_arts = {}
-    for key in keys:
-        if 'index' in key:
-            key = key.split('/')[1]
-        for title, link in article_dict.items():
-            past_keywords = []
-            for keyword in keywords_dict[key]:
-                if keyword in title and check_list(past_keywords, title):
-                    try:
-                        rel_arts[key] = rel_arts[key] + [(title, link)]
-                    except:
-                        rel_arts[key] = [(title, link)]
-                past_keywords.append(keyword)
-    #print(rel_arts)
-    return rel_arts
+# def Article_Scrape(keys, keywords_dict = link_matches, page = "https://www.wsj.com/news/markets"):
+#     """ Currently this scraper identifies all articles present on the webpage - inefficient to say the least. Could reverse the process by taking each key
+#         and using its keywords to match certain articles found in the soup.FindAll function. Then by using FindNextChild, etc. could find the relevant summary and image content."""
+#     http = urllib3.PoolManager()
+#     r = http.request("GET", page)
+#     soup = BeautifulSoup(r.data, "html.parser")
+#     article_dict = {}
+#     #print(soup.findAll("a", {"class": "wsj-headline-link"}))
+#     for _ in soup.findAll("a", {"class": "wsj-headline-link"}):
+#         """ a is child of h3. h3 is sibling of div container holding image.
+#         Aforementioned div is a container of div of meta with desired content url.
+#         For desired summary, findAll p.wsj-summary sibling to h3.wsj-headline
+#         """
+#         article_dict[_.text] = _.get('href')
+#     #print(article_dict)
+#     rel_arts = {}
+#     for key in keys:
+#         if 'index' in key:
+#             key = key.split('/')[1]
+#         for title, link in article_dict.items():
+#             past_keywords = []
+#             for keyword in keywords_dict[key]:
+#                 if keyword in title and check_list(past_keywords, title):
+#                     try:
+#                         rel_arts[key] = rel_arts[key] + [(title, link)]
+#                     except:
+#                         rel_arts[key] = [(title, link)]
+#                 past_keywords.append(keyword)
+#     #print(rel_arts)
+#     return rel_arts
 
 def check_list(lst, article):
     _ = True
