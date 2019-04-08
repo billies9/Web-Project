@@ -29,19 +29,27 @@
   <section class='info'>
     <aside class='articles'>
       <h3 class='head'>Articles of Interest:</h3>
-      {% if articles != None %}
-      <ul>
-        {% for title_link in articles[title] %}
-            <li class='article'><a href='{{ title_link[1] }}' title='{{ title_link[0] }}'>{{ title_link[0] }}</a></li>
-        {% endfor %}
+        <ul>
+          <script src='OpacityChange.js'></script>
+          {% for row, article in articles.iterrows() %}
+          <li class='article'>
+            <a href='{{ article["url"] }}'><img src='{{ article["urlToImage"] }}' alt='Image relating to article'/></a>
+            <a href='{{ article["url"] }}'><p id='title'>{{ article['title'] }}</p></a>
+            <br />
+            <p id='description'>{{ article['description'] }}</p>
+          </li>
+          {% endfor %}
         </ul>
-      {% else %}
-        <div>
+
+        <!-- <div>
           <p>Scripts would normally scrape <a href='https://wsj.com/news/markets'>WSJ news</a> for articles that match a subset of keywords for {{title}}.
           <a href='https://pythonanywhere.com'>PythonAnywhere</a> does not allow free accounts to conduct web scraping. Paid accounts, however,
           do and will be looked at as a viable option for this project. </p>
-        </div>
-      {% endif %}
+        </div> -->
+
+    </aside>
+    <aside class='company'>
+      Company info will go here...
     </aside>
   </section>
 
@@ -53,7 +61,7 @@
     </div>
 
     <div class='choose'>
-      <input type='radio' name='range' value='1D' />Daily
+      <!-- <input type='radio' name='range' value='1D' />Daily -->
       <input type='radio' name='range' value='1M' checked/>1M <!--Default will always be 1M which causes problems with Choose Date-->
       <input type='radio' name='range' value='3M' />3M
       <input type='radio' name='range' value='6M' />6M
@@ -65,7 +73,6 @@
 
   <section class='graphs'>
     <div id='price' class='price'>
-      <!-- {{ div1|safe }} -->
       <script>
         var graphs = {{price | safe}};
         Plotly.react('price', graphs, {}, {responsive:true});

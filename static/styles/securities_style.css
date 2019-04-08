@@ -1,17 +1,21 @@
 body {
   display: grid;
-  /* grid-template-columns: repeat(12, 8.33vw); */
-  grid-template-rows: repeat(6, auto); /* Nav Header Dates Graphs Articles Footer */
+  grid-template-rows: repeat(4, auto); /* Nav Header Main Footer */
 }
-main { /* Main to be its own grid and flexbox inside each sûbgrid*/
+main { /* Main to be its own grid and flexbox inside each subgrid*/
+  grid-row: 3/4; /* of body grid */
   display: grid;
-  grid-template-columns: repeat(9, 10vw);
-  grid-template-rows: repeat(3, auto);
+  grid-template-columns: repeat(auto-fill, minmax(10vw, 1fr));
+  grid-template-rows: repeat(3, max-content);
+  /* grid-auto-rows: auto; */
   grid-gap: 10px;
 }
+/* --------------------------------------- */
+/* Not relevant information  */
 .date-selector {
   grid-column: span 9;
-  grid-row: 1;
+  /* grid-row: 1;  */
+  /* of main grid */
   display: flex;
   flex-flow: row wrap;
   justify-content: space-between;
@@ -26,58 +30,85 @@ main { /* Main to be its own grid and flexbox inside each sûbgrid*/
 .button {
   margin-left: 5px;
 }
-.graphs { /* Within the main CSS styling */
+/* ---------------------------------------- */
+.graphs {
   grid-column: span 9;
-  grid-row: 2;
+  /* grid-row: 2;  */
+  /* of main grid */
   display: flex;
   flex-flow: row wrap;
   justify-content: space-evenly;
 }
 .info {
   grid-column: span 9; /* span equates to columns */
-  grid-row: 3;
+  /* grid-row: 3;  */
+  /* of main grid */
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(40vw, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(375px, 1fr));
   grid-template-rows: auto;
 }
 .articles {
-  /* grid-column: 1 /span 9;
-  grid-row: 3; */
-  grid-column: span 1;
+  grid-column: span 2;
   grid-row: span 1;
-  /* display: flex; */
-}
-.articles li:hover a {
-  text-decoration: none;
-  color: black;
 }
 .articles ul {
   list-style-type: none;
   columns: 2;
+  padding-left: 0;
 }
-.article {
+.articles .article {
+  display: block;
+  border-bottom: 2px solid rgba(0, 0, 0, .2);
   margin: 5px 0;
+  /* break-inside: avoid-column; */
 }
-/* body {
-  width:95%;
-  position: relative;
+a {
+  text-decoration: none;
 }
-h1 {
-  padding: 0 0 0 3px;
-  margin: .5em 0 0 1em;
+a:hover {
+  text-decoration: none;
 }
-section {
-  width: 50vw;
-  padding-top: 2em;
+img {
+  width: 30%;
+  min-width: 120px;
+  float: left;
+  margin-right: 5px;
 }
-.price {
-  margin-bottom: 10px;
+#title {
+  overflow: hidden;
 }
-
-aside {
-  padding: 1em;
-  border: 2px ridge rgba(0, 0, 0, .5);
-  position: absolute;
-  right: 0px;
-  width: 35vw;
-} */
+#title:hover {
+  color: black;
+  text-decoration: none;
+}
+#description {
+  clear: left;
+}
+/* Transition on hovered over article to read */
+.article:hover {
+  box-shadow: 3px 3px 5px black;
+}
+.change_opacity {
+  opacity: 0.2;
+}
+.article:hover~.article {
+  opacity: .3;
+}
+.company {
+  grid-column: 3/4;
+}
+@media only screen and (max-width: 1140px) {
+  .company {
+    grid-column: 1/-1;
+  }
+}
+@media only screen and (max-width: 760px) {
+  .articles ul {
+    columns: 1;
+  }
+}
+@media only screen and (max-width: 380px) {
+  .info {
+    grid-column: span 7;
+  }
+}
