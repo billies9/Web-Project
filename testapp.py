@@ -2,23 +2,22 @@ from flask import Flask
 
 app = Flask(__name__)
 
-# import routes
 from flask import render_template, request, url_for, redirect, flash
-import matplotlib.pyplot as plt
 from graph import build_interactive_graph, Build_graph
 from bokeh.embed import components
 from bokeh.resources import CDN
-from portfolio_page_construction import import_names, Article_Scrape
 import pandas as pd
 from datetime import datetime, timedelta
+from indices import link_matches
+from newsapi import NewsApiClient
 
-mapping = {"Microsoft Corp.": "MSFT",
-           "Amazon.com Inc.": "AMZN",
-           "Facebook Inc. Cl A": "FB",
-           "Tesla Inc.": "TSLA",
-           "Under Armour Inc. Cl A": "UAA",
-           "Alphabet Inc. Cl A": "GOOGL",
-           "Apple Inc.": "AAPL",
+mapping = {"Microsoft": "MSFT",
+           "Amazon": "AMZN",
+           "Facebook": "FB",
+           "Tesla": "TSLA",
+           "Under Armour": "UAA",
+           "Alphabet": "GOOGL",
+           "Apple": "AAPL",
            "S&P 500 Index": "SPX",
            "Dow Jones Industrial Average": "DJIA"}
 @app.route('/')
@@ -35,22 +34,16 @@ class Security():
 
     def __init__(self, ticker):
         self.ticker = ticker
-        #all_tickers = ['AAPL', 'AMZN', 'MSFT', 'TSLA', 'FB', 'UAA', 'GOOGL', 'SPX', 'DJIA']
-        #self.articles = Article_Scrape(keys = all_tickers)
+        self.news_api_key = '47c36eeeae194d00831b85ae1b7efaba'
 
     def build_security(self):
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
-        # script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates)) # Log default dates of last 1M
-        # script2, div2 = components(build_interactive_graph(self.ticker, 'R', dates = dates))
+
         script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
         script2 = Build_graph(self.ticker, (dates, 'hist')).regression_graph()
-        try:
-            articles = Article_Scrape(keys = [self.ticker,])
-        except:
-            articles = None
 
-        # try: articles = Article_Scrape(keys = [self.ticker,])
-        # except: articles = None
+        articles = self.Articles(self.news_api_key)
+
         if request.method == 'POST':
             dates = self.build_range_dates()
             if dates[0] is True:
@@ -78,8 +71,6 @@ class Security():
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
                 script2 = Build_graph(self.ticker, dates).regression_graph()
-                # script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'P', date_type = dates[1])) # Custom dates as given by the user
-                # script2, div2 = components(build_interactive_graph(frame_title = self.ticker, dates = dates[0], type = 'R', date_type = dates[1])) # Replace former graphs with custom date ranges
         return render_template('securities/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
@@ -92,12 +83,10 @@ class Security():
 
     def build_index(self): # Re-work to resemble new codes
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
-        # script1, div1 = components(build_interactive_graph(self.ticker, 'P', dates = dates))
+
         script1 = Build_graph(self.ticker, dates).price_graph()
-        try:
-            articles = Article_Scrape(keys = [self.ticker,])
-        except:
-            articles = None
+
+        articles = self.Articles(self.news_api_key)
         if request.method == 'POST':
             dates = self.build_range_dates()
             if dates[0] is True:
@@ -119,7 +108,6 @@ class Security():
                                         stocks=mapping,
                                         resources=CDN.render())
             else:
-                # script1, div1 = components(build_interactive_graph(frame_title = self.ticker, dates = dates, type = 'P')) # Custom dates as given by the user
                 script1 = Build_graph(self.ticker, dates).price_graph()
         return render_template('indices/' + self.ticker + '.html',
                                 title=self.ticker,
@@ -136,7 +124,6 @@ class Security():
         if range_dates['date1'] > range_dates['date2'] and range_dates['date2'] != '':
             error = True
             print(error)
-            #flash('You must select a Beg. Date that occurs prior to the End Date.')
             return error, 'Date Range Selector - End Date occurs before Beg. Date'
         if range_dates['date1'] != '':
             if range_dates['date2'] == '':
@@ -168,6 +155,20 @@ class Security():
         d = min(date.day, [31, 29 if y%4==0 and not y%400==0 else 28,31,30,31,30,31,31,30,31,30,31][m-1])
         return date.replace(day=d,month=m, year=y)
 
+    def Articles(self, api_key):
+        newsapi = NewsApiClient(api_key = api_key)
+        # Get keywords for ticker based on its list matches
+        match_val = [key for key, val in mapping.items() if val == self.ticker][0]
+        all_articles = newsapi.get_everything(q = match_val,
+                                            sources = 'the-wall-street-journal, the-new-york-times',
+                                            domains = 'wsj.com, nytimes.com',
+                                            language = 'en'
+                                            # sort_by = 'popularity'
+                                            )
+        frame = pd.DataFrame(all_articles['articles'])
+        if frame.empty:
+            return None
+        return frame[['title', 'description', 'url', 'urlToImage']]
 
 @app.route('/indices/SPX', methods = ['GET', 'POST'])
 def SPX(ticker = 'SPX'):
