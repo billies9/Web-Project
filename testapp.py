@@ -8,7 +8,7 @@ from bokeh.embed import components
 from bokeh.resources import CDN
 import pandas as pd
 from datetime import datetime, timedelta
-from indices import link_matches
+# from indices import link_matches
 from newsapi import NewsApiClient
 
 mapping = {"Microsoft": "MSFT",
