@@ -12,7 +12,7 @@ html {
 body {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  grid-template-rows: repeat(4, auto); /* Nav Header Main Footer*/
+  grid-template-rows: repeat(2, auto) 75vh auto; /* Nav Header Main Footer*/
   grid-gap: 10px;
 }
 nav {
