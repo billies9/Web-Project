@@ -11,18 +11,24 @@ html {
 }
 body {
   display: grid;
-  grid-template-columns: repeat(12, 8.33vw);
-  grid-template-rows: repeat(2, auto) 75vh auto; /* Nav Header Main Footer */
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  grid-template-rows: repeat(4, auto); /* Nav Header Main Footer*/
   grid-gap: 10px;
 }
 nav {
-  grid-column: span 11;
+  grid-column: 1/-1;
   grid-row: 1/2;
 }
 header {
-  grid-column: span 4;
+  grid-column: 1/-1;
   grid-row: 2/3;
   text-align: left;
+}
+h1 {
+  font-size: calc(1.25em + 1.25vw + 1vh);
+}
+.content {
+  margin-bottom: 0;
 }
 .alert {
   grid-column: 3/9;
@@ -44,78 +50,22 @@ header {
   transition: 0.3s;
 }
  main {
-  grid-column: 1/12;
+  grid-column: 1/-1;
   grid-row: 3/4;
 }
 footer {
-  grid-column: 1/12;
+  grid-column: 1/-1;
   grid-row: 4;
   text-align: right;
 }
 header, main, footer {
-  margin-left: 10px;
+  margin: 0 10px;
 }
-/*
-body {
-
-  background-color: lightslategrey;
-  font-family: sans-serif;
-  font-size: 100%;
-  width: 95%;
-}
-.dropdown-menu {
-  white-space: nowrap;
-}
-a {
-  text-decoration: none !important;
-  color: #000;
+@media screen only and (max-width: 800px) {
 
 }
-a:hover, a:focus {
-  color: pink;
+@media only screen and (max-width: 624px) {
+  body {
+    grid-template-rows: repeat(4, auto);
+  }
 }
-
-h1 {
-  padding-left:10px;
-  margin-left: 3px;
-}
-form {
-  margin-bottom: 5px;
-}
-.security_list {
-  float: left;
-  margin-right: 10px;
-  cursor: pointer;
-}
-p {
-  margin-right: 10em;
-}
-.alert {
-  padding: 20px;
-  background-color: #f44336;
-  color: white;
-  opacity: 1;
-  transition: opacity 0.6s;
-  margin-bottom: 15px;
-}
-.alert.success {background-color: #4CAF50;}
-.alert.info {background-color: #2196F3;}
-.alert.warning {background-color: #ff9800;}
-.closebtn {
-  margin-left: 15px;
-  color: white;
-  font-weight: bold;
-  float: right;
-  font-size: 22px;
-  line-height: 20px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.closebtn:hover {
-  color: black;
-}
-footer {
-  text-align: right;
-  opacity: .5;
-  clear: both;
-}  */
