@@ -25,13 +25,16 @@
 {% block DJIA %}
 <section class='info'>
   <aside class='articles'>
-    <h3 class='head'>Articles of Interest:</h3>
+    <div class='head'>
+      <h3 id='head'>Articles of Interest:</h3>
+      <p id='attribution'><a href='https://www.wsj.com/'>WSJ</a> powered by <a href='https://newsapi.org/'>NewsApi.org</a></p>
+    </div>
       <ul>
         <script src='OpacityChange.js'></script>
         {% for row, article in articles.iterrows() %}
         <li class='article'>
           <a href='{{ article["url"] }}'><img src='{{ article["urlToImage"] }}' alt='Image relating to article'/></a>
-          <a href='{{ article["url"] }}'><p id='title'>{{ article['title'] }}</p></a>
+          <a href='{{ article["url"] }}'><p class='title'>{{ article['title'] }}</p></a>
           <br />
           <p id='description'>{{ article['description'] }}</p>
         </li>
@@ -52,7 +55,7 @@
 
   <section>
     <form method='POST'>
-      <input type='radio' name='return_type' value='D' checked/>Daily
+      <!-- <input type='radio' name='return_type' value='D' checked/>Daily -->
       <input type='radio' name='return_type' value='M' />Monthly
       <input type='radio' name='return_type' value='Y' />Yearly
       <span>  <!-- Return_Type form appear here -->
