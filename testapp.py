@@ -160,8 +160,8 @@ class Security():
         # Get keywords for ticker based on its list matches
         match_val = [key for key, val in mapping.items() if val == self.ticker][0]
         all_articles = newsapi.get_everything(q = match_val,
-                                            sources = 'the-wall-street-journal, the-new-york-times',
-                                            domains = 'wsj.com, nytimes.com',
+                                            sources = 'the-wall-street-journal',
+                                            domains = 'wsj.com',
                                             language = 'en'
                                             # sort_by = 'popularity'
                                             )
