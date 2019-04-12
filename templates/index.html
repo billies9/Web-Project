@@ -4,10 +4,12 @@
   <title>{{ title }}</title>
 {% endblock %}
 
+<!-- Pre-packaged inside row using base.html inheritance -->
 {% block index_header %}
   <h1>Homepage</h1>
 {% endblock %}
 
+<!-- Pre-packaged inside row using base.html inheritance -->
 {% block content %} <!--Matching block statement names (content) knows to combine here-->
   <p class='summary'>
     This interface was designed for personal use to compile stock and company related information. This relates to company stock prices, financial information, relevant articles,
@@ -17,14 +19,14 @@
     Currently in the works:
     <ul class='works'>
       <li>
-        <p class='content'>Developing workaround for web scraping on PythonAnywhere hosting service.</p>
+        <p class='content'>Re-developing site to be managed by Bootstrap Grid instead of CSS Grid.</p>
       </li>
       <li>
         <p class='content'>Portfolio page is not correctly displaying the specified portfolio upon POST of weights (not selectors for random portfolios)</p>
       </li>
-      <li>
-        <p class='content'>  Organizing dropdown button to maintain consistency through page load/reloads.</p>
-      </li>
+      <!-- <li>
+        <p class='content'>Organizing dropdown button to maintain consistency through page load/reloads.</p>
+      </li> -->
       <li>
         <p class='content'>Introducing a search function that allows a user to find a security (and all information) outside of the base set of securities held by the interface.</p>
       </li>
