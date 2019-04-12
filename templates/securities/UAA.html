@@ -24,68 +24,74 @@
 {% endblock %}
 
 {% block UAA %}
-<section class='info'>
-  <aside class='articles'>
-    <div class='head'>
-      <h3 id='head'>Articles of Interest:</h3>
+<section class='row info'>
+  <aside class='col-lg-8 col-md-6 articles'>
+    <div class='row' id='head'>
+      <h3 id='head-title'>Articles of Interest:</h3>
       <p id='attribution'><a href='https://www.wsj.com/'>WSJ</a> powered by <a href='https://newsapi.org/'>NewsApi.org</a></p>
     </div>
-      <ul>
-        <script src='OpacityChange.js'></script>
-        {% for row, article in articles.iterrows() %}
-        <li class='article'>
-          <a href='{{ article["url"] }}'><img src='{{ article["urlToImage"] }}' alt='Image relating to article'/></a>
-          <a href='{{ article["url"] }}'><p class='title'>{{ article['title'] }}</p></a>
+    <ul class='list-unstyled row articles'>
+      {% for row, article in articles.iterrows() %}
+        <li class='list-item border-top border-bottom border-right col-lg-6 article'>
+          <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Image relating to article'/></a>
+          <a class='title' href='{{ article["url"] }}'><p>{{ article['title'] }}</p></a>
           <p id='description'>{{ article['description'] }}</p>
         </li>
-        {% endfor %}
-      </ul>
-
-      <!-- <div>
-        <p>Scripts would normally scrape <a href='https://wsj.com/news/markets'>WSJ news</a> for articles that match a subset of keywords for {{title}}.
-        <a href='https://pythonanywhere.com'>PythonAnywhere</a> does not allow free accounts to conduct web scraping. Paid accounts, however,
-        do and will be looked at as a viable option for this project. </p>
-      </div> -->
-
+      {% endfor %}
+    </ul>
   </aside>
-  <aside class='company'>
-    Company info will go here...
+  <aside class='col-lg-4 col-md-6 company'>
+    <div class='row' id='head'>
+      <h3 id='head-title'>Company Info.</h3>
+    </div>
+    <!-- <ul class='list-unstyled row company_info'>
+
+    </ul> -->
+    <!-- Company info will go here...Maybe whole bunch of rows for given information... -->
   </aside>
 </section>
 
+<div class='row'>
+  <div class='col-lg-12 col-md-12 col-sm-12'>
+    <form method='POST' class='date-selector'>
+      <div class='enter'>
+        <label class='date1' for='date1'>Beg. Date:</label><input type='date' name='date1' />
+        <label class='date2' for='date2'>End Date:</label><input type='date' name='date2' />
+        <button type='submit'>Change Date</button>
+      </div>
 
-<form method='POST' class='date-selector'>
-  <div class='enter'>
-    <label class='date1' for='date1'>Beg. Date:</label><input type='date' name='date1' />
-    <label class='date2' for='date2'>End Date:</label><input type='date' name='date2' />
-    <button type='submit'>Change Date</button>
+      <div class='choose'>
+        <!-- <input type='radio' name='range' value='1D' />Daily -->
+        <input type='radio' name='range' value='1M' checked/>1M <!--Default will always be 1M which causes problems with Choose Date-->
+        <input type='radio' name='range' value='3M' />3M
+        <input type='radio' name='range' value='6M' />6M
+        <input type='radio' name='range' value='1Y' />1Y
+        <input type='radio' name='range' value='5Y' />5Y
+        <button type='submit'>Change Date</button>
+      </div>
+    </form>
   </div>
+</div>
 
-  <div class='choose'>
-    <!-- <input type='radio' name='range' value='1D' />Daily -->
-    <input type='radio' name='range' value='1M' checked/>1M <!--Default will always be 1M which causes problems with Choose Date-->
-    <input type='radio' name='range' value='3M' />3M
-    <input type='radio' name='range' value='6M' />6M
-    <input type='radio' name='range' value='1Y' />1Y
-    <input type='radio' name='range' value='5Y' />5Y
-    <button type='submit'>Change Date</button>
-  </div>
-</form>
+<div class='row'>
+  <div class='col-lg-6 col-md-6 price' id='price'>
+    <script type='text/javascript'>
+      var graphs = {{ price | safe }};
+      var layout = { width: 0.9 * window.innerWidth,
+                    height: 0.9 * window.innerHeight };
+      Plotly.newPlot('price', graphs, layout);
 
-<section class='graphs'>
-  <div id='price' class='price'>
-    <!-- {{ div1|safe }} -->
-    <script>
-      var graphs = {{price | safe}};
-      Plotly.plot('price',graphs,{});
+      window.onresize = function() {
+          Plotly.relayout(myDiv, {
+            width: 0.9 * window.innerWidth,
+            height: 0.9 * window.innerHeight
+          });
+        };
+      };
     </script>
   </div>
-  <div id='regression' class='regression'>
-    <script>
-      var graphs = {{regress | safe}};
-      Plotly.react('regression', graphs, {}, {responsive:true});
-    </script>
+  <div class='col-lg-6 col-md-6 regression' id='regression'>
+    Regression Graph here
   </div>
-
-</section>
+</div>
 {% endblock %}
