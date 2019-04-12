@@ -7,6 +7,14 @@
   float: left;
   margin-right: 5px;
 }
+.articles:hover .article {
+  opacity: 0.4;
+  transition: all .25s linear;
+}
+.articles:hover .article:hover {
+  opacity: 1;
+  box-shadow: 3px 3px 2px black;
+}
 #head {
   display: flex;
   justify-content: space-between;
