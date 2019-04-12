@@ -8,6 +8,7 @@ from bokeh.embed import components
 from bokeh.resources import CDN
 import pandas as pd
 from datetime import datetime, timedelta
+# from collections import OrderedDict
 # from indices import link_matches
 from newsapi import NewsApiClient
 
@@ -20,21 +21,24 @@ mapping = {"Microsoft": "MSFT",
            "Apple": "AAPL",
            "S&P 500 Index": "SPX",
            "Dow Jones Industrial Average": "DJIA"}
+
 @app.route('/')
 @app.route('/index')
 # Creates association between URL given as argument and function
 # Assigning two of them, Flask requests either of two URLs and returns value of function
 def index():
     title = 'HomePage'
+    ord_mapping = {key:val for key, val in sorted(mapping.items())}
     return render_template('index.html',
                             title=title,
-                            stocks=mapping)
+                            stocks=ord_mapping)
 
 class Security():
 
     def __init__(self, ticker):
         self.ticker = ticker
         self.news_api_key = '47c36eeeae194d00831b85ae1b7efaba'
+        self.ord_mapping = {key:val for key, val in sorted(mapping.items())}
 
     def build_security(self):
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
@@ -54,7 +58,7 @@ class Security():
                                         regress=script2,
                                         # div2=div2,
                                         articles=articles,
-                                        stocks=mapping,
+                                        stocks=self.ord_mapping,
                                         error=dates[0],
                                         error_msg=dates[1],
                                         resources=CDN.render())
@@ -66,7 +70,7 @@ class Security():
                                         regress=script2,
                                         # div2=div2,
                                         articles=articles,
-                                        stocks=mapping,
+                                        stocks=self.ord_mapping,
                                         resources=CDN.render())
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
@@ -78,7 +82,7 @@ class Security():
                                 regress=script2,
                                 # div2=div2,
                                 articles=articles,
-                                stocks=mapping,
+                                stocks=self.ord_mapping,
                                 resources=CDN.render())
 
     def build_index(self): # Re-work to resemble new codes
@@ -95,7 +99,7 @@ class Security():
                                         price=script1,
                                         # div1=div1,
                                         articles=articles,
-                                        stocks=mapping,
+                                        stocks=self.ord_mapping,
                                         error=dates[0],
                                         error_msg=dates[1],
                                         resources=CDN.render())
@@ -105,7 +109,7 @@ class Security():
                                         price=script1,
                                         # div1=div1,
                                         articles=articles,
-                                        stocks=mapping,
+                                        stocks=self.ord_mapping,
                                         resources=CDN.render())
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
@@ -114,7 +118,7 @@ class Security():
                                 price=script1,
                                 # div1=div1,
                                 articles=articles,
-                                stocks=mapping,
+                                stocks=self.ord_mapping,
                                 resources=CDN.render())
 
     def build_range_dates(self):
@@ -159,11 +163,14 @@ class Security():
         newsapi = NewsApiClient(api_key = api_key)
         # Get keywords for ticker based on its list matches
         match_val = [key for key, val in mapping.items() if val == self.ticker][0]
+        days_25_prev = (datetime.today() - timedelta(25)).strftime("%Y-%m-%d")
+        yesterday = (datetime.today() - timedelta(1)).strftime("%Y-%m-%d")
         all_articles = newsapi.get_everything(q = match_val,
                                             sources = 'the-wall-street-journal',
                                             domains = 'wsj.com',
-                                            language = 'en'
-                                            # sort_by = 'popularity'
+                                            language = 'en',
+                                            from_param = days_25_prev,
+                                            to = yesterday
                                             )
         frame = pd.DataFrame(all_articles['articles'])
         if frame.empty:
