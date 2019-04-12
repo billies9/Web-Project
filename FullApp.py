@@ -3,11 +3,13 @@ from flask import Flask
 app = Flask(__name__)
 
 from flask import render_template, request, url_for, redirect, flash
-from graph import build_interactive_graph, Build_graph
+from graph import Build_graph, Security_Portfolio_data
 from bokeh.embed import components
 from bokeh.resources import CDN
 import pandas as pd
 from datetime import datetime, timedelta
+import requests
+import json
 # from collections import OrderedDict
 # from indices import link_matches
 from newsapi import NewsApiClient
@@ -173,12 +175,48 @@ class Security():
                                             to = yesterday
                                             )
         frame = pd.DataFrame(all_articles['articles'])
+        self.get_financial_ratios()
         if frame.empty:
             return None
         return frame[['title', 'description', 'url', 'urlToImage']]
 
-    
+    def get_company_info(self):
+        r = requests.get('https://financialmodelingprep.com/api/company/profile/{}?datatype=json'.format(self.ticker))
+        data = (json.loads(r.text))[self.ticker]
+        frame = pd.DataFrame.from_dict(data, orient='index')
+        rel_frame = frame.loc[['Beta', 'VolAvg', 'MktCap', 'LastDiv', 'Range', 'exchange', 'industry', 'website', 'description', 'CEO'], :]
+        return rel_frame
 
+    def get_financial_ratios(self):
+        r = requests.get('https://financialmodelingprep.com/api/financial-ratios/{}?datatype=json'.format(self.ticker))
+        latest_data = (json.loads(r.text))['financialRatios']['2018-09'] # Find a way to review latest market data by date...
+        rel_data = {}
+
+        # Liquidity Measures - Current, Quick, Days of Payables Outstanding
+        liq = ['currentRatio', 'quickRatio', 'daysofPayablesOutstanding']
+        for measure in liq:
+            rel_data[measure] = latest_data['liquidityMeasurementRatios'][measure]
+
+        # Profitability Measures - Gross Profit, ROE, Effective Tax Rate
+        prof = ['grossProfitMargin', 'returnOnEquity', 'effectiveTaxRate']
+        for measure in prof:
+            rel_data[measure] = latest_data['profitabilityIndicatorRatios'][measure]
+
+        # Debt Measures - Debt, Debt-to-Equity, Interest Coverage
+        debt = ['debtRatio', 'debtEquityRatio', 'interestCoverageRatio']
+        for measure in debt:
+            rel_data[measure] = latest_data['debtRatios'][measure]
+
+        # Operating Performance - Asset Turnover
+        ops = ['assetTurnover']
+        for measure in ops:
+            rel_data[measure] = latest_data['operatingPerformanceRatios'][measure]
+
+        # Investment Valuation - Price-to-Book, PE, Dividence Yield
+        inv = ['priceBookValueRatio', 'priceEarningsRatio', 'dividendYield']
+        for measure in inv:
+            rel_data[measure] = latest_data['investmentValuationRatios'][measure]
+        print(rel_data)
 @app.route('/indices/SPX', methods = ['GET', 'POST'])
 def SPX(ticker = 'SPX'):
     return Security(ticker).build_index()
