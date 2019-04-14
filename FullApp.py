@@ -36,7 +36,6 @@ def index():
                             stocks=ord_mapping)
 
 class Security():
-
     def __init__(self, ticker):
         self.ticker = ticker
         self.news_api_key = '47c36eeeae194d00831b85ae1b7efaba'
@@ -63,6 +62,8 @@ class Security():
                                         stocks=self.ord_mapping,
                                         error=dates[0],
                                         error_msg=dates[1],
+                                        company_info=self.get_company_info(),
+                                        financial_info=self.get_financial_ratios(),
                                         resources=CDN.render())
             elif dates[0] == None:
                 return render_template('securities/' + self.ticker + '.html',
@@ -73,6 +74,8 @@ class Security():
                                         # div2=div2,
                                         articles=articles,
                                         stocks=self.ord_mapping,
+                                        company_info=self.get_company_info(),
+                                        financial_info=self.get_financial_ratios(),
                                         resources=CDN.render())
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
@@ -85,9 +88,12 @@ class Security():
                                 # div2=div2,
                                 articles=articles,
                                 stocks=self.ord_mapping,
+                                company_info=self.get_company_info(),
+                                financial_info=self.get_financial_ratios(),
                                 resources=CDN.render())
 
-    def build_index(self): # Re-work to resemble new codes
+    def build_index(self):
+        # Get Sector performances here for SPX, etc.
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
 
         script1 = Build_graph(self.ticker, dates).price_graph()
@@ -175,7 +181,6 @@ class Security():
                                             to = yesterday
                                             )
         frame = pd.DataFrame(all_articles['articles'])
-        self.get_financial_ratios()
         if frame.empty:
             return None
         return frame[['title', 'description', 'url', 'urlToImage']]
@@ -185,38 +190,88 @@ class Security():
         data = (json.loads(r.text))[self.ticker]
         frame = pd.DataFrame.from_dict(data, orient='index')
         rel_frame = frame.loc[['Beta', 'VolAvg', 'MktCap', 'LastDiv', 'Range', 'exchange', 'industry', 'website', 'description', 'CEO'], :]
+        rel_frame.drop(['website'], axis=0, inplace=True)
+
+        # Need to clean data - make dollar figures look like dollars, etc.
+        (rel_frame.rename({'VolAvg': 'Volume Average', 'MktCap': 'Market Capitalization', 'LastDiv': 'Latest Dividend',
+                                                    'exchange': 'Exchange', 'industry': 'Industry', 'description': 'Description'}, axis='index', inplace=True))
+        # Clean Volume Average to be 0 decimal places with commas
+        rel_frame.loc['Volume Average'] = '{:,.0f}'.format(float(rel_frame.loc['Volume Average', 0]))
+        # Clean Market Capitalization, Latest Dividend to be 2 decimal places with commas / dollar signs
+        for figure in ['Market Capitalization', 'Latest Dividend']:
+            rel_frame.loc[figure] = '${:,.2f}'.format(float(rel_frame.loc[figure, 0]))
+        # Clean Range for 2 decimal places with commas / dollar signs
+        split_ = rel_frame.loc['Range', 0].split('-')
+        lst = []
+        for num in rel_frame.loc['Range', 0].split('-'):
+            # rel_frame.loc['Range'] = '${:,.2f}'.format(float(num))
+            lst.append('${:,.2f}'.format(float(num)))
+            lst.append('-')
+        lst.pop(-1)
+        rel_frame.loc['Range'] = ' '.join(lst)
         return rel_frame
 
     def get_financial_ratios(self):
         r = requests.get('https://financialmodelingprep.com/api/financial-ratios/{}?datatype=json'.format(self.ticker))
         latest_data = (json.loads(r.text))['financialRatios']['2018-09'] # Find a way to review latest market data by date...
-        rel_data = {}
+        rel_data = {'Liquidity': {}, 'Profitability': {}, 'Debt': {}, 'Operating': {}, 'Investment': {}}
 
         # Liquidity Measures - Current, Quick, Days of Payables Outstanding
         liq = ['currentRatio', 'quickRatio', 'daysofPayablesOutstanding']
         for measure in liq:
-            rel_data[measure] = latest_data['liquidityMeasurementRatios'][measure]
+            if measure == liq[0]:
+                measure_rename = 'Current Ratio'
+            elif measure == liq[1]:
+                measure_rename = 'Quick Ratio'
+            else:
+                measure_rename = 'Days of Payables Outstanding'
+            rel_data['Liquidity'][measure_rename] = round(latest_data['liquidityMeasurementRatios'][measure], 4)
 
         # Profitability Measures - Gross Profit, ROE, Effective Tax Rate
         prof = ['grossProfitMargin', 'returnOnEquity', 'effectiveTaxRate']
         for measure in prof:
-            rel_data[measure] = latest_data['profitabilityIndicatorRatios'][measure]
+            if measure == prof[0]:
+                measure_rename = 'Gross Profit Margin'
+            elif measure == prof[1]:
+                measure_rename = 'Return on Equity'
+            else:
+                measure_rename = 'Effective Tax Rate'
+            rel_data['Profitability'][measure_rename] = round(latest_data['profitabilityIndicatorRatios'][measure], 4)
 
         # Debt Measures - Debt, Debt-to-Equity, Interest Coverage
         debt = ['debtRatio', 'debtEquityRatio', 'interestCoverageRatio']
         for measure in debt:
-            rel_data[measure] = latest_data['debtRatios'][measure]
+            if measure == debt[0]:
+                measure_rename = 'Debt Ratio'
+            elif measure == debt[1]:
+                measure_rename = 'Debt-to-Equity Ratio'
+            else:
+                measure_rename = 'Interest Coverage Ratio'
+            rel_data['Debt'][measure_rename] = round(latest_data['debtRatios'][measure], 4)
 
         # Operating Performance - Asset Turnover
         ops = ['assetTurnover']
         for measure in ops:
-            rel_data[measure] = latest_data['operatingPerformanceRatios'][measure]
+            if measure == ops[0]:
+                measure_rename = 'Asset Turnover Ratio'
+            rel_data['Operating'][measure_rename] = round(latest_data['operatingPerformanceRatios'][measure], 4)
 
         # Investment Valuation - Price-to-Book, PE, Dividence Yield
         inv = ['priceBookValueRatio', 'priceEarningsRatio', 'dividendYield']
+        multiplier = 1
+        pct = ''
         for measure in inv:
-            rel_data[measure] = latest_data['investmentValuationRatios'][measure]
-        print(rel_data)
+            if measure == inv[0]:
+                measure_rename = 'Price-to-Book'
+            elif measure == inv[1]:
+                measure_rename = 'Price-to-Earnings'
+            else:
+                measure_rename = 'Divident Yield'
+                multiplier = 100
+                pct = '%'
+            rel_data['Investment'][measure_rename] = str(round(latest_data['investmentValuationRatios'][measure], 4) * multiplier) + pct
+        return rel_data
+
 @app.route('/indices/SPX', methods = ['GET', 'POST'])
 def SPX(ticker = 'SPX'):
     return Security(ticker).build_index()
