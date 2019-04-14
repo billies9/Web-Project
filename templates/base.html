@@ -50,7 +50,7 @@
               <h6 class='dropdown-header'>Indices</h6>
               {% for name, ticker in stocks.items() %}
                 {% if name == 'S&P 500 Index' or name == 'Dow Jones Industrial Average': %}
-                  <a class='dropdown-item' href="{{ url_for( ticker ) }}" title='Visit {{ ticker }} page'>{{ name }}</a>
+                  <a class='dropdown-item disabled' href="{{ url_for( ticker ) }}" title='Visit {{ ticker }} page'>{{ name }}</a>
                 {% endif %}
               {% endfor %}
 
@@ -63,10 +63,10 @@
             </div>
           </li>
         </ul>
-        <form class="form-inline my-2 my-lg-0">
+        <!-- <form class="form-inline my-2 my-lg-0">
           <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
+        </form> -->
       </div>
     </nav>
     {% if error %}
