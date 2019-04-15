@@ -34,22 +34,73 @@
       {% for row, article in articles.iterrows() %}
         <li class='list-item border-top border-bottom border-right col-lg-6 article'>
           <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Image relating to article'/></a>
-          <a class='title' href='{{ article["url"] }}'><p>{{ article['title'] }}</p></a>
+          <p class='title'><a href='{{ article["url"] }}'>{{ article['title'] }}</a></p>
           <p id='description'>{{ article['description'] }}</p>
         </li>
       {% endfor %}
     </ul>
   </aside>
-  <aside class='col-lg-4 col-md-6 company'>
+  <aside class='col-lg-4 col-md-6'>
     <div class='row' id='head'>
-      <h3 id='head-title'>Company Info.</h3>
+      <h3 id='head-title'>Stock Info.</h3>
     </div>
-    <!-- <ul class='list-unstyled row company_info'>
-
-    </ul> -->
-    <!-- Company info will go here...Maybe whole bunch of rows for given information... -->
+    <div id="accordion">
+      <div class="card">
+        <div class="card-header" id="headingOne">
+          <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+              <h4>Company Information</h4>
+            </button>
+          </h5>
+        </div>
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+          <div class="card-body">
+            <ul class='list-unstyled row'>
+              {% for row, info in company_info.iterrows() %}
+                <li class='list-item border-bottom col-12'>
+                  <h5 class='company measurelabel head'>{{ row }}</h5>
+                  <p class='company measurevalue'>{{ info[0] }} </p>
+                  <!-- Might want to put these on same row at some point -->
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header" id="headingTwo">
+          <h5 class="mb-0">
+            <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+              <h4>Financial Information</h4>
+            </button>
+          </h5>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+          <div class="card-body">
+            <ul class='list-unstyled row'>
+              {% for head, ratio_group in financial_info.items() %}
+                <li class='list-item border-bottom col-12 '>
+                  <h5>{{ head }}</h5>
+                </li>
+                <li class='list-item col-12'>
+                  <ul class='list-unstyled keep-indent'>
+                    {% for measure, ratio in ratio_group.items() %}
+                      <li class='list-item col-12 row contain'>
+                        <span class='financial measurelabel'>{{ measure }}</span>
+                        <span class='financial measurevalue'>{{ ratio }}</span>
+                      </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
   </aside>
 </section>
+
 
 <div class='row'>
   <div class='col-lg-12 col-md-12 col-sm-12'>
