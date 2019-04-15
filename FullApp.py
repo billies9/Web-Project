@@ -169,14 +169,14 @@ class Security():
 
     def Articles(self, api_key):
         newsapi = NewsApiClient(api_key = api_key)
-        # Get all articles for company based on compnay name from T-25 to T-1
+        # Get all articles for company based on compnay name from T-10 to T-1
         match_val = Security_Portfolio_data(self.ticker, ('', '')).get_match_val()
-        days_25_prev = (datetime.today() - timedelta(25)).strftime("%Y-%m-%d")
+        days_10_prev = (datetime.today() - timedelta(10)).strftime("%Y-%m-%d")
         yesterday = (datetime.today() - timedelta(1)).strftime("%Y-%m-%d")
         all_articles = newsapi.get_everything(q = match_val, # Required to be company name
                                             language = 'en',
                                             sort_by = 'popularity',
-                                            from_param = days_25_prev,
+                                            from_param = days_10_prev,
                                             to = yesterday
                                             )
         frame = pd.DataFrame(all_articles['articles'])
