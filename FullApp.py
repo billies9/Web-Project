@@ -175,6 +175,7 @@ class Security():
         yesterday = (datetime.today() - timedelta(1)).strftime("%Y-%m-%d")
         all_articles = newsapi.get_everything(q = match_val, # Required to be company name
                                             language = 'en',
+                                            sort_by = 'popularity',
                                             from_param = days_25_prev,
                                             to = yesterday
                                             )
