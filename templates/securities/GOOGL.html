@@ -33,7 +33,9 @@
     <ul class='list-unstyled row articles'>
       {% for row, article in articles.iterrows() %}
         <li class='list-item border-top border-bottom border-right col-lg-6 article'>
-          <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Image relating to article'/></a>
+          <div class='img-container'>
+            <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Article Image'/></a>
+          </div>
           <p class='title'><a href='{{ article["url"] }}'>{{ article['title'] }}</a></p>
           <p id='description'>{{ article['description'] }}</p>
         </li>
@@ -128,16 +130,19 @@
   <div class='col-lg-6 col-md-6 price' id='price'>
     <script type='text/javascript'>
       var graphs = {{ price | safe }};
-      var layout = { width: 0.9 * window.innerWidth,
-                    height: 0.9 * window.innerHeight };
-      Plotly.newPlot('price', graphs, layout);
+      var width = document.getElementById('price').offsetWidth;
+      var layout = { width: width,
+        // width: 0.4 * window.innerWidth,
+                    height: 0.9 * document.getElementById('price').offetHeight };
 
+      Plotly.newPlot('price', graphs, layout, {responsive:true});
       window.onresize = function() {
-          Plotly.relayout(myDiv, {
-            width: 0.9 * window.innerWidth,
-            height: 0.9 * window.innerHeight
-          });
-        };
+        var width = document.getElementById('price').offsetWidth;
+        Plotly.relayout('price', {
+          // width: 0.4 * window.innerWidth,
+          width: width,
+          height: 0.9 * window.innerHeight
+        })
       };
     </script>
   </div>
