@@ -173,7 +173,7 @@ class Security():
                                             sort_by = 'popularity',
                                             from_param = days_10_prev,
                                             to = yesterday,
-                                            page_size = 20, # Returns number of articles per pull - could create a scroll bar / page selector
+                                            page_size = 10, # Returns number of articles per pull - could create a scroll bar / page selector
                                             )
         frame = pd.DataFrame(all_articles['articles'])
         if frame.empty:
