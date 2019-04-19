@@ -289,7 +289,7 @@ class Build_graph():
                         ticks='outside',
                         showline=True,
                     ),
-                    
+
                     # margin = go.layout.Margin(
                     #     l=75,
                     #     r=10,
