@@ -48,58 +48,58 @@ class Security_Portfolio_data():
         self.date_type = dates_type[1]
         #maybe put dates, frame_title here
 
-    def create_connection(self):
-        # For use with Tradier_API
-        # connection = client.HTTPSConnection('proxy.server', 3128, timeout= 30)
-        # connection.set_tunnel('sandbox.tradier.com', 443) # need to add proxy.server:3128 here
-        connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
-        headers = {'Accept':'application/json'}
-        Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
-        headers['Authorization'] = Tradier_API
-        return connection, headers
-
-
-    def type_security_content(self, frame_title):
-        # For use with Tradier_API
-        if self.date_type == 'hist':
-            if frame_title == 'SPX': frame_title = 'SPY'
-            elif frame_title == 'DJIA': frame_title = 'DIA'
-            return self.hist_security_content(frame_title)
-        else:
-            if frame_title == 'SPX': frame_title = 'SPY'
-            elif frame_title == 'DJIA': frame_title = 'DIA'
-            return self.intra_security_content(frame_title)
-
-    def intra_security_content(self, frame_title):
-        # For use with Tradier_API
-        connection, headers = self.create_connection()
-        (connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'
-                        .format(frame_title, self.dates[0], self.dates[1], 'open'), None, headers))
-
-        data = self.load_security_content(connection)
-        df = pd.DataFrame(data['series']['data'])
-        df['time'] = pd.to_datetime(df['time'])
-        connection.close()
-        return df.set_index('time')
-
-    def hist_security_content(self, frame_title):
-        # For use with Tradier_API
-        connection, headers = self.create_connection()
-        (connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'
-                        .format(frame_title, self.dates[0], self.dates[1]), None, headers))
-
-        data = self.load_security_content(connection)
-        df = pd.DataFrame(data['history']['day'])
-        df['date'] = pd.to_datetime(df['date'])
-        connection.close()
-        return df.set_index('date')
-
-    def load_security_content(self, connection):
-        # For use with Tradier_API
-        response = connection.getresponse()
-        content = response.read().decode("utf-8")
-        data = json.loads(content)
-        return data
+    # def create_connection(self):
+    #     # For use with Tradier_API
+    #     # connection = client.HTTPSConnection('proxy.server', 3128, timeout= 30)
+    #     # connection.set_tunnel('sandbox.tradier.com', 443) # need to add proxy.server:3128 here
+    #     connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
+    #     headers = {'Accept':'application/json'}
+    #     Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
+    #     headers['Authorization'] = Tradier_API
+    #     return connection, headers
+    #
+    #
+    # def type_security_content(self, frame_title):
+    #     # For use with Tradier_API
+    #     if self.date_type == 'hist':
+    #         if frame_title == 'SPX': frame_title = 'SPY'
+    #         elif frame_title == 'DJIA': frame_title = 'DIA'
+    #         return self.hist_security_content(frame_title)
+    #     else:
+    #         if frame_title == 'SPX': frame_title = 'SPY'
+    #         elif frame_title == 'DJIA': frame_title = 'DIA'
+    #         return self.intra_security_content(frame_title)
+    #
+    # def intra_security_content(self, frame_title):
+    #     # For use with Tradier_API
+    #     connection, headers = self.create_connection()
+    #     (connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'
+    #                     .format(frame_title, self.dates[0], self.dates[1], 'open'), None, headers))
+    #
+    #     data = self.load_security_content(connection)
+    #     df = pd.DataFrame(data['series']['data'])
+    #     df['time'] = pd.to_datetime(df['time'])
+    #     connection.close()
+    #     return df.set_index('time')
+    #
+    # def hist_security_content(self, frame_title):
+    #     # For use with Tradier_API
+    #     connection, headers = self.create_connection()
+    #     (connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'
+    #                     .format(frame_title, self.dates[0], self.dates[1]), None, headers))
+    #
+    #     data = self.load_security_content(connection)
+    #     df = pd.DataFrame(data['history']['day'])
+    #     df['date'] = pd.to_datetime(df['date'])
+    #     connection.close()
+    #     return df.set_index('date')
+    #
+    # def load_security_content(self, connection):
+    #     # For use with Tradier_API
+    #     response = connection.getresponse()
+    #     content = response.read().decode("utf-8")
+    #     data = json.loads(content)
+    #     return data
 
     def load_content(self):
         # For use with financialmodelingprep
@@ -113,6 +113,11 @@ class Security_Portfolio_data():
         df['weekday'] = df['date'].dt.dayofweek
         df = df[df['weekday'] < 5]
         return df
+
+    def parse_date_content(self):
+        df = self.load_content()
+        df.set_index('date', inplace = True)
+        return df.loc[self.dates[0]:self.dates[1], :]
 
     def get_match_val(self):
         r = requests.get('https://financialmodelingprep.com/api/stock/list/all?datatype=json')
@@ -259,7 +264,7 @@ class Build_graph():
 
     def price_graph(self):
         # data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content(self.ticker) # Tradier Request
-        data = Security_Portfolio_data(self.ticker, (self.dates, self.date_type)).load_content()
+        data = Security_Portfolio_data(self.ticker, (self.dates, self.date_type)).parse_date_content()
         data['close'] = data['close'] * self.multiplier
 
         plot = go.Scatter(
@@ -272,14 +277,26 @@ class Build_graph():
                     title = self.ticker + ' Price Chart',
                     yaxis = go.layout.YAxis(
                         title = 'Price',
-                        automargin = True
+                        automargin = True,
+                        mirror=True,
+                        ticks='outside',
+                        showline=True,
                     ),
                     xaxis = go.layout.XAxis(
                         title = 'Date',
-                        automargin = True
-                    )
-                    # height = 650,
-                    # width = 650
+                        automargin = True,
+                        mirror=True,
+                        ticks='outside',
+                        showline=True,
+                    ),
+                    
+                    # margin = go.layout.Margin(
+                    #     l=75,
+                    #     r=10,
+                    #     b=10,
+                    #     t=50,
+                    #     pad=4
+                    # )
 
         )
         end_data = [plot]
@@ -289,29 +306,29 @@ class Build_graph():
 
     def regression_graph(self):
         # data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content(self.ticker) # For use with Tradier_API
-        data = Security_Portfolio_data(self.ticker, (self.dates, self.date_type)).load_content()
-        data['Percent Change'] = data['close'].pct_change() * 100
+        data = Security_Portfolio_data(self.ticker, (self.dates, self.date_type)).parse_date_content()
+        data['Percent Change'] = data['close'].pct_change()
         # Use SPY as proxy for SPX
-        spx_data = Security_Portfolio_data('SPY', (self.dates, self.date_type)).load_content()
-        data['SPX Pct Change'] = (spx_data['close'] * 10).pct_change() * 100
+        spx_data = Security_Portfolio_data('SPY', (self.dates, self.date_type)).parse_date_content()
+        data['SPX Pct Change'] = (spx_data['close'] * 10).pct_change()
         data.dropna(inplace=True)
 
         plot = go.Scatter(
                 x = data['SPX Pct Change'],
                 y = data['Percent Change'],
                 mode = 'markers',
-                hoverinfo='y',
+                hoverinfo='x+y',
                 name = self.ticker + ' Daily Change'
         )
-        slope, intercept, r_value, p_value, std_err = stats.linregress(data['SPX Pct Change'], data['Percent Change'])
-
+        slope, intercept, r_value, p_value, std_err = stats.linregress(data['SPX Pct Change'], data['Percent Change']) # Append to dataframe to graph as scatter line
+        line = slope * data['SPX Pct Change'] + intercept
         fit = go.Scatter(
                   x=data['SPX Pct Change'],
-                  y=slope * data['SPX Pct Change'] + intercept,
+                  y=line,
                   mode='lines',
-                  hoverinfo = 'x',
+                  hoverinfo = 'none',
                   marker=go.scatter.Marker(color='rgb(0, 0, 0)'),
-                  name='Beta: ' + str(round(slope, 4)) + '\n' + 'Alpha: ' + str(round(intercept, 4))
+                  name='Beta: ' + str(round(slope, 4)) + '\n' + 'Alpha: ' + str(round(intercept, 4)) # Maybe move to annotation
                   )
         end_data = [plot, fit]
 
@@ -319,25 +336,53 @@ class Build_graph():
                     title = self.ticker + ' Regression Chart',
                     yaxis = go.layout.YAxis(
                         title = self.ticker + ' Daily Returns',
-                        tickformat = ',.0%',
-                        # hoverformat = '.4f',
-                        automargin = True
+                        tickformat = ',.1%',
+                        hoverformat = ',.4%',
+                        automargin = True,
+                        mirror=True,
+                        ticks='outside',
+                        showline=True,
                     ),
                     xaxis = go.layout.XAxis(
                         title = 'SPX Daily Return',
-                        tickformat = ',.4%'
-                    )
-                    # ),
-                    # height = 650,
-                    # width = 650
-
+                        tickformat = ',.1%',
+                        hoverformat = ',.4%',
+                        automargin = True,
+                        mirror=True,
+                        ticks='outside',
+                        showline=True,
+                    ),
+                    showlegend = True,
+                    legend = dict(x=.1, y= .9),
+                    # height = 550,
+                    # width = 550,
+                    # margin = go.layout.Margin(
+                    #     l=10,
+                    #     r=10,
+                    #     b=10,
+                    #     t=50,
+                    #     pad=4
+                    # )
         )
         fig = go.Figure(data = end_data, layout = layout)
-        graph = json.dumps(end_data, cls=plotly.utils.PlotlyJSONEncoder)
+        graph = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graph
 
     def portfolio_graph(self, weights):
         return
+
+
+
+
+
+
+
+
+
+
+
+
+#--------------------------------------------------------------------------------------------------------------------------
 
 # def build_interactive_graph(frame_title, type = None, weights = None, dates = None, date_type = 'hist'):
 #     """ Type: 'P' is Price graphing;
@@ -436,13 +481,6 @@ class Build_graph():
 #         # mapper = linear_cmap(field_name='Return', palette=Spectral6 ,low=min(frame_df['Sharpe Ratio']) ,high=max(frame_df['Sharpe Ratio']))
 #         return fig
 #
-
-
-
-
-
-
-#--------------------------------------------------------------------------------------------------------------------------
 # def tradier_content(frame_title, dates, date_type = 'hist', weights = None):
 #     connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
 #     headers={'Accept':'application/json'}
