@@ -1,11 +1,14 @@
 :root {
   --hover-link: #1f77b4;
 }
-.picture {
+.img-container {
   width: 30%;
   min-width: 120px;
   float: left;
   margin-right: 5px;
+}
+.picture {
+  width: 100%;
 }
 .title {
   display: block;
@@ -62,3 +65,29 @@
   clear: left;
   font-size: .8125em;
 }
+.price, .regression {
+  padding: 0;
+}
+.date-selectors {
+  display: flex;
+}
+.enter, .choose {
+  display: inline-block;
+}
+.btn-primary {
+  background-color: rgba(0, 0, 0, .6);
+  border-color: rgba(0, 0, 0, .6);
+}
+.btn-primary:hover {
+  background-color: #000;
+  border-color: #000;
+}
+/* .date-selectors {
+  display: flex;
+  justify-content: space-around;
+  list-style: none;
+}
+.date-selectors .enter, .date-selectors .choose {
+  display: flex;
+  justify-content: center;
+} */
