@@ -55,9 +55,7 @@ class Security():
                 return render_template('securities/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        # div1=div1,
                                         regress=script2,
-                                        # div2=div2,
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         error=dates[0],
@@ -69,9 +67,7 @@ class Security():
                 return render_template('securities/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        # div1=div1,
                                         regress=script2,
-                                        # div2=div2,
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
@@ -83,9 +79,7 @@ class Security():
         return render_template('securities/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
-                                # div1=div1,
                                 regress=script2,
-                                # div2=div2,
                                 articles=articles,
                                 stocks=self.ord_mapping,
                                 company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
@@ -105,7 +99,6 @@ class Security():
                 return render_template('indices/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        # div1=div1,
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         error=dates[0],
@@ -115,7 +108,6 @@ class Security():
                 return render_template('indices/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
-                                        # div1=div1,
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         resources=CDN.render())
@@ -124,7 +116,6 @@ class Security():
         return render_template('indices/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
-                                # div1=div1,
                                 articles=articles,
                                 stocks=self.ord_mapping,
                                 resources=CDN.render())
@@ -170,14 +161,19 @@ class Security():
     def Articles(self, api_key):
         newsapi = NewsApiClient(api_key = api_key)
         # Get all articles for company based on compnay name from T-10 to T-1
+        # Must check for total results to determine page number in get_everything request
+
         match_val = Security_Portfolio_data(self.ticker, ('', '')).get_match_val()
         days_10_prev = (datetime.today() - timedelta(10)).strftime("%Y-%m-%d")
         yesterday = (datetime.today() - timedelta(1)).strftime("%Y-%m-%d")
         all_articles = newsapi.get_everything(q = match_val, # Required to be company name
+                                            sources = 'the-wall-street-journal, the-new-york-times, bbc-news, cnbc, financial-times, the-economist, fortune, reuters',
+                                            # domains = 'nytimes.com, wsj.com',
                                             language = 'en',
                                             sort_by = 'popularity',
                                             from_param = days_10_prev,
-                                            to = yesterday
+                                            to = yesterday,
+                                            page_size = 20, # Returns number of articles per pull - could create a scroll bar / page selector
                                             )
         frame = pd.DataFrame(all_articles['articles'])
         if frame.empty:
@@ -192,10 +188,10 @@ def SPX(ticker = 'SPX'):
 @app.route('/indices/DJIA', methods = ['GET', 'POST'])
 def DJIA(ticker = 'DJIA'):
     return Security(ticker).build_index()
-
-@app.route('/securities/<some_ticker>', methods = ['GET', 'POST'])
-def security_page(some_ticker):
-    return Security(some_ticker).build_security_general()
+#
+# @app.route('/securities/<some_ticker>', methods = ['GET', 'POST'])
+# def security_page(some_ticker):
+#     return Security(some_ticker).build_security_general()
 
 @app.route('/securities/FB', methods = ['GET', 'POST'])
 def FB(ticker = 'FB'):
