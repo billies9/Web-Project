@@ -1,17 +1,9 @@
-# import xlwings as xw
-# import pickle
 import pandas as pd
 import numpy as np
 import urllib3
 from bs4 import BeautifulSoup
-# from New import link_matches
 from collections import OrderedDict
 
-#with open(r'C:\Users\billies9\OneDrive\Documents\Python_Screwaround\Stock_Scraper\Good_Project\Stocks.pickle', 'rb') as file:
-#    dfs = pickle.load(file)
-    # Produces only a single security to look at - big problem for constructing portfolios
-    # Looking into Excel_Export2 for problem
-# dfs = pd.read_excel(io=r'C:\Users\billies9\OneDrive\Documents\Python_Screwaround\Stock_Scraper\Good_Project\practice.xlsx', sheetname=None, skiprows=2, usecols = [0, 1, 2])
 mapping = {"Microsoft Corp.": "MSFT",
            "Amazon.com Inc.": "AMZN",
            "Facebook Inc. Cl A": "FB",
@@ -95,12 +87,8 @@ def construct_portfolio(dates, weights = None, close_df = None, returns_df = Non
     return results_frame
 
 def covariance_matrix(df_columns, price_df = None):
-    for ticker in df_columns:
-        pct_df = price_df[ticker + ' returns'].reset_index(drop = True)
-        try:
-            result = pd.concat((pct_df, result), axis= 1)
-        except:
-            result = pct_df
+    price_df = price_df.filter(regex='returns').dropna()
+    result = price_df.reset_index(drop = True)
     try:
         return result.cov()
     except:
