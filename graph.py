@@ -1,35 +1,16 @@
-import matplotlib.pyplot as plt
 import pandas as pd
-import io
-import os
 import base64
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-from flask import Response
 import numpy as np
 import json
-# from tiingo import TiingoClient
-from http import client
 import requests
-# from alpha_vantage.timeseries import TimeSeries
+from collections import OrderedDict
 from datetime import datetime, timedelta
-from bokeh.embed.standalone import json_item
-from bokeh.plotting import figure
-from bokeh.resources import CDN
-from bokeh.models.sources import ColumnDataSource
-from bokeh.models.tools import HoverTool
-from portfolio_page_construction import construct_portfolio, covariance_matrix
-from bokeh.palettes import Spectral6
-from bokeh.transform import linear_cmap
+from portfolio_page_construction import covariance_matrix
 import plotly
 import plotly.plotly as py
 import plotly.graph_objs as go
 import scipy.stats as stats
 
-# Alpha_Vantage_API = '2IJFMFJU2M5IDU6N'
-Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
-
-#dfs = pd.read_excel(r'C:\Users\billies9\OneDrive\Documents\Python_Screwaround\Stock_Scraper\Good_Project\practice.xlsx', sheetname=None, skiprows = 2)
 mapping = {"Microsoft Corp.": "MSFT",
            "Amazon.com Inc.": "AMZN",
            "Facebook Inc. Cl A": "FB",
@@ -42,67 +23,11 @@ mapping = {"Microsoft Corp.": "MSFT",
 
 class Security_Portfolio_data():
     def __init__(self, ticker, dates_type):
-        # self.frame_title = frame_title
         self.ticker = ticker
         self.dates = dates_type[0]
         self.date_type = dates_type[1]
-        #maybe put dates, frame_title here
-
-    # def create_connection(self):
-    #     # For use with Tradier_API
-    #     # connection = client.HTTPSConnection('proxy.server', 3128, timeout= 30)
-    #     # connection.set_tunnel('sandbox.tradier.com', 443) # need to add proxy.server:3128 here
-    #     connection = client.HTTPSConnection('sandbox.tradier.com', 443, timeout=30)
-    #     headers = {'Accept':'application/json'}
-    #     Tradier_API = 'Bearer qLUA59t6iQGIgASUpKY9AstSAiNC'
-    #     headers['Authorization'] = Tradier_API
-    #     return connection, headers
-    #
-    #
-    # def type_security_content(self, frame_title):
-    #     # For use with Tradier_API
-    #     if self.date_type == 'hist':
-    #         if frame_title == 'SPX': frame_title = 'SPY'
-    #         elif frame_title == 'DJIA': frame_title = 'DIA'
-    #         return self.hist_security_content(frame_title)
-    #     else:
-    #         if frame_title == 'SPX': frame_title = 'SPY'
-    #         elif frame_title == 'DJIA': frame_title = 'DIA'
-    #         return self.intra_security_content(frame_title)
-    #
-    # def intra_security_content(self, frame_title):
-    #     # For use with Tradier_API
-    #     connection, headers = self.create_connection()
-    #     (connection.request('GET', '/v1/markets/timesales?symbol={}&interval=1min&start={}&end={}&session_filter={}'
-    #                     .format(frame_title, self.dates[0], self.dates[1], 'open'), None, headers))
-    #
-    #     data = self.load_security_content(connection)
-    #     df = pd.DataFrame(data['series']['data'])
-    #     df['time'] = pd.to_datetime(df['time'])
-    #     connection.close()
-    #     return df.set_index('time')
-    #
-    # def hist_security_content(self, frame_title):
-    #     # For use with Tradier_API
-    #     connection, headers = self.create_connection()
-    #     (connection.request('GET', '/v1/markets/history?symbol={}&start={}&end={}'
-    #                     .format(frame_title, self.dates[0], self.dates[1]), None, headers))
-    #
-    #     data = self.load_security_content(connection)
-    #     df = pd.DataFrame(data['history']['day'])
-    #     df['date'] = pd.to_datetime(df['date'])
-    #     connection.close()
-    #     return df.set_index('date')
-    #
-    # def load_security_content(self, connection):
-    #     # For use with Tradier_API
-    #     response = connection.getresponse()
-    #     content = response.read().decode("utf-8")
-    #     data = json.loads(content)
-    #     return data
 
     def load_content(self):
-        # For use with financialmodelingprep
         r = requests.get('https://financialmodelingprep.com/api/company/historical-price/{ticker}?serietype=candle&datatype=json'.format(ticker = self.ticker))
         data = json.loads(r.text)
         df = pd.DataFrame(data['historical'])
@@ -114,7 +39,9 @@ class Security_Portfolio_data():
         df = df[df['weekday'] < 5]
         return df
 
-    def parse_date_content(self):
+    def parse_date_content(self, ticker = None):
+        if ticker != None:
+            self.ticker = ticker
         df = self.load_content()
         df.set_index('date', inplace = True)
         return df.loc[self.dates[0]:self.dates[1], :]
@@ -128,7 +55,7 @@ class Security_Portfolio_data():
         CompanyName = TickerName.split(' ')[0] # Find a way to target full name outside of Inc. / Corp. / etc.
         return CompanyName
 
-    def portfolio_content(self, weights = None):
+    def portfolio_close_returns(self, weights = None):
         if weights == None:
             print('error - no weights given')
         dfclose = pd.DataFrame(columns = [ticker + ' close' for ticker in weights.keys() if weights[ticker] != ''])
@@ -136,9 +63,9 @@ class Security_Portfolio_data():
         i = 0
         for column in dfclose.columns:
             ticker = column.split(' ')[0]
-            frame = self.hist_security_content(ticker)
+            frame = self.parse_date_content(ticker)
             dfclose[ticker + ' close'] = frame['close']
-            dfclose[ticker + ' returns'] = frame['close'].pct_change() * 100 # for covairance matrix calcs
+            dfclose[ticker + ' returns'] = frame['close'].pct_change() * 100 # for covariance matrix calcs
             try:
                 _ = (dfclose.loc[self.dates[1], ticker + ' close'] - dfclose.loc[self.dates[0], ticker + ' close']) / dfclose.loc[self.dates[0], ticker + ' close']
                 dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker]) # Weighted
@@ -147,6 +74,67 @@ class Security_Portfolio_data():
                 _ = (dfclose.loc[self.dates[1], ticker + ' close'] - dfclose.loc[self.dates[0], ticker + ' close']) / dfclose.loc[self.dates[0], ticker + ' close']
                 dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker]) # Weighted
         return dfclose, dfreturns
+
+    def portfolio_rand_user_weights(self, weights):
+        # Defines random selection of securities and weights for use when selection or weight defined by user
+        close_df, returns_df = self.portfolio_close_returns(weights)
+
+        results = np.zeros((3 + len(returns_df.columns), 1))
+        _, on_weights = {}, {}
+        for column in close_df.columns: # WIll run over twice becasue of close and returns - Do I need daily returns?
+            ticker = column.split(' ')[0]
+            if ticker != _.keys():
+                return_over_pd = (close_df.loc[self.dates[1], ticker + ' close'] - close_df.loc[self.dates[0], ticker + ' close']) / close_df.loc[self.dates[0], ticker + ' close']
+                _[ticker] = [return_over_pd,]
+                on_weights[ticker] = 'on'
+
+        covar_df = pd.DataFrame(_)
+        cov_matrix = np.array(covariance_matrix(covar_df.columns, close_df))
+
+        ord_weights = OrderedDict(sorted(weights.items(), key=lambda k: k[0]))
+        lst_weights = np.array([float(val) for key, val in ord_weights.items() if val != ''])
+
+        results[0, 0] = returns_df.sum(axis = 1) * 100 # annualize?
+        results[1, 0] = np.sqrt(np.dot(lst_weights.T, np.dot(cov_matrix, lst_weights))) * 100  # Std Dev.
+        results[2, 0] = (results[0, 0] - .03) / results[1, 0]
+        for j in range(len(lst_weights)):
+            results[j + 3, 0] = lst_weights[j]
+        results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(_.keys()))
+        return results_frame, on_weights
+
+    def portfolio_rand_rand_weights(self, weights):
+        # Select of securities
+        _ = {}
+        pct_df = pd.DataFrame()
+        for key in weights.keys():
+            if weights[key] == 'on':
+                frame = self.parse_date_content(key)
+                pct_df[key + ' returns'] = frame['close'].pct_change().dropna() * 100
+                _[key] = [(frame['close'][-1] - frame['close'][0]) / frame['close'][0]]
+
+        df = pd.DataFrame.from_dict(_, orient='columns')
+        cov_matrix = np.array(covariance_matrix(df.columns, pct_df))
+        ret_list = df.values.tolist()
+        num_portfolios = 4000 # maybe allow user input in later versions...
+        results = np.zeros((3 + len(df.columns), num_portfolios))
+        nums = np.random.random(size = (num_portfolios, len(df.columns)))
+
+        days = pd.to_datetime(self.dates[1]) - pd.to_datetime(self.dates[0])
+        for i in range(num_portfolios):
+            weights = np.array(nums[i] / np.sum(nums[i]))
+
+            port_return = np.sum(ret_list * weights) * (252/(days.days)) # Check returns list and match with weights in std deviation
+
+            port_deviation = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights))) * np.sqrt(252/days.days)
+
+            results[0, i] = port_return
+            results[1, i] = port_deviation
+            results[2, i] = (results[0, i] - .03) / results[1, i]
+            for j in range(len(weights)):
+                results[j + 3, i] = weights[j]
+
+        results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(_.keys()))
+        return results_frame
 
     def get_company_info(self):
         r = requests.get('https://financialmodelingprep.com/api/company/profile/{}?datatype=json'.format(self.ticker))
@@ -193,7 +181,6 @@ class Security_Portfolio_data():
             try: figure = round(latest_data['liquidityMeasurementRatios'][measure], 4)
             except: figure = 'Null'
             rel_data['Liquidity'][measure_rename] = figure
-
 
         # Profitability Measures - Gross Profit, ROE, Effective Tax Rate
         prof = ['grossProfitMargin', 'returnOnEquity', 'effectiveTaxRate']
@@ -263,7 +250,6 @@ class Build_graph():
             self.multiplier = 1
 
     def price_graph(self):
-        # data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content(self.ticker) # Tradier Request
         data = Security_Portfolio_data(self.ticker, (self.dates, self.date_type)).parse_date_content()
         data['close'] = data['close'] * self.multiplier
 
@@ -289,15 +275,6 @@ class Build_graph():
                         ticks='outside',
                         showline=True,
                     ),
-
-                    # margin = go.layout.Margin(
-                    #     l=75,
-                    #     r=10,
-                    #     b=10,
-                    #     t=50,
-                    #     pad=4
-                    # )
-
         )
         end_data = [plot]
         fig = go.Figure(data = end_data, layout = layout)
@@ -305,7 +282,6 @@ class Build_graph():
         return graph
 
     def regression_graph(self):
-        # data = Security_Portfolio_data((self.dates, self.date_type)).type_security_content(self.ticker) # For use with Tradier_API
         data = Security_Portfolio_data(self.ticker, (self.dates, self.date_type)).parse_date_content()
         data['Percent Change'] = data['close'].pct_change()
         # Use SPY as proxy for SPX
@@ -354,21 +330,20 @@ class Build_graph():
                     ),
                     showlegend = True,
                     legend = dict(x=.1, y= .9),
-                    # height = 550,
-                    # width = 550,
-                    # margin = go.layout.Margin(
-                    #     l=10,
-                    #     r=10,
-                    #     b=10,
-                    #     t=50,
-                    #     pad=4
-                    # )
         )
         fig = go.Figure(data = end_data, layout = layout)
         graph = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
         return graph
 
     def portfolio_graph(self, weights):
+        try:
+            h, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
+            i = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
+
+        except:
+            i = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
+
+
         return
 
 
@@ -456,8 +431,8 @@ class Build_graph():
 #                                                     + '\n' + "Alpha: " + str(round(fit_func[0], 3))))
 #             return fig
 #     else:
-#         start_date, end_date = pd.to_datetime(dates[0]), pd.to_datetime(dates[1])
-#         days = end_date.date() - start_date.date()
+#         self.dates[0], self.dates[1] = pd.to_datetime(dates[0]), pd.to_datetime(dates[1])
+#         days = self.dates[1].date() - self.dates[0].date()
 #         # print(weights)
 #         fig = figure(title = frame_title, sizing_mode='fixed', plot_width=670, plot_height= 450, toolbar_location='right')
 #         fig.xaxis.axis_label = 'Std. Deviation'
