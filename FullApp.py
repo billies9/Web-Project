@@ -1,17 +1,11 @@
-from flask import Flask
+from flask import Flask, render_template, request, url_for, redirect
 
 app = Flask(__name__)
 
-from flask import render_template, request, url_for, redirect, flash
 from graph import Build_graph, Security_Portfolio_data
-from bokeh.embed import components
-from bokeh.resources import CDN
-import pandas as pd
 from datetime import datetime, timedelta
 import requests
-import json
-# from collections import OrderedDict
-# from indices import link_matches
+import pandas as pd
 from newsapi import NewsApiClient
 
 mapping = {"Microsoft": "MSFT",
@@ -61,8 +55,7 @@ class Security():
                                         error=dates[0],
                                         error_msg=dates[1],
                                         company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios(),
-                                        resources=CDN.render())
+                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
             elif dates[0] == None:
                 return render_template('securities/' + self.ticker + '.html',
                                         title=self.ticker,
@@ -71,8 +64,7 @@ class Security():
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios(),
-                                        resources=CDN.render())
+                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
                 script2 = Build_graph(self.ticker, dates).regression_graph()
@@ -83,8 +75,7 @@ class Security():
                                 articles=articles,
                                 stocks=self.ord_mapping,
                                 company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-                                financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios(),
-                                resources=CDN.render())
+                                financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
 
     def build_index(self):
         # Get Sector performances here for SPX, etc.
@@ -102,23 +93,41 @@ class Security():
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         error=dates[0],
-                                        error_msg=dates[1],
-                                        resources=CDN.render())
+                                        error_msg=dates[1])
             elif dates[0] == None:
                 return render_template('indices/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
                                         articles=articles,
-                                        stocks=self.ord_mapping,
-                                        resources=CDN.render())
+                                        stocks=self.ord_mapping)
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
         return render_template('indices/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
                                 articles=articles,
-                                stocks=self.ord_mapping,
-                                resources=CDN.render())
+                                stocks=self.ord_mapping)
+    def build_portfolio(self):
+        if request.method == 'POST':
+            dates = self.build_range_dates()
+            weights = { ticker:weight for ticker, weight in request.form.to_dict().items() if ticker not in ['date1', 'date2', 'Get_Weights'] }
+            if dates[0] is True:
+                return render_template('portfolio/create.html',
+                                        title='Create / View portfolio',
+                                        error=dates[0],
+                                        error_msg=dates[1],
+                                        stocks=self.ord_mapping)
+            elif dates[0] != None and weights != None:
+                script1 = Build_graph('', dates).portfolio_graph(weights)
+                return render_template('portfolio/create.html',
+                                        title='Create / View portfolio',
+                                        graph=script1,
+                                        stocks=self.ord_mapping)
+            else:
+                pass
+        return render_template('portfolio/create.html',
+                                title='Create / View portfolio',
+                                stocks=self.ord_mapping)
 
     def build_range_dates(self):
         range_dates = request.form
@@ -221,36 +230,39 @@ def GOOGL(ticker = 'GOOGL'):
 def TSLA(ticker = 'TSLA'):
     return Security(ticker).build_security()
 
-@app.route('/', methods=['GET', 'POST'])
-def get_page():
-    return redirect(url_for(request.form['security']))
-
 @app.route('/portfolio/create', methods=['GET', 'POST'])
 def create_portoflio():
-    title = 'Portfolio Construction'
-    # names = import_names()
-    weights = {}
-    if request.method =='POST':
-        dates = (request.form.get('date1'), request.form.get('date2'))
-        if dates[0] > dates[1]:
-            # Want something to flash here...
-            return render_template('portfolio/create.html',
-                                    title=title,
-                                    stocks=mapping,
-                                    resources=CDN.render())
-        weights = {ticker: weight for (ticker, weight) in request.form.items() if ticker in mapping.values()}
-        script1, div1 = components(build_interactive_graph('Portfolio', 'Port', weights = weights, dates = dates))
-        return render_template('portfolio/create.html',
-                                title=title,
-                                stocks=mapping,
-                                weights=weights,
-                                port=script1,
-                                div1=div1,
-                                resources=CDN.render())
-    return render_template('portfolio/create.html',
-                            title=title,
-                            stocks=mapping)
+    return Security('').build_portfolio()
+    # title = 'Portfolio Construction'
+    # # names = import_names()
+    # weights = {}
+    # if request.method =='POST':
+    #     dates = (request.form.get('date1'), request.form.get('date2'))
+    #     if dates[0] > dates[1]:
+    #         # Want something to flash here...
+    #         return render_template('portfolio/create.html',
+    #                                 title=title,
+    #                                 stocks=mapping,
+    #                                 resources=CDN.render())
+    #     weights = {ticker: weight for (ticker, weight) in request.form.items() if ticker in mapping.values()}
+    #     script1, div1 = components(build_interactive_graph('Portfolio', 'Port', weights = weights, dates = dates))
+    #     return render_template('portfolio/create.html',
+    #                             title=title,
+    #                             stocks=mapping,
+    #                             weights=weights,
+    #                             port=script1,
+    #                             div1=div1,
+    #                             resources=CDN.render())
+    # return render_template('portfolio/create.html',
+    #                         title=title,
+    #                         stocks=mapping)
 
 
 if __name__ == '__main__':
     app.run()
+
+
+# ---------------------------------------------------------------------
+# @app.route('/', methods=['GET', 'POST'])
+# def get_page():
+#     return redirect(url_for(request.form['security']))
