@@ -1,3 +1,6 @@
+:root {
+  --hover-link: #1f77b4;
+}
 html {
   box-sizing: border-box;
 }
@@ -10,6 +13,17 @@ html {
   margin-top: 15px;
   margin-bottom: 15px;
   border: 2px solid rgba(0, 0, 0, .4);
+}
+.navbar {
+  border-bottom: 2px solid rgba(0, 0, 0, .4);
+}
+.navbar-light .navbar-nav .nav-link {
+  color: var(--hover-link);
+}
+.navbar-light .navbar-nav .nav-link:hover {
+  color: var(--hover-link);
+  background-color: rgba(0, 0, 0, .1);
+  font-weight: bold;
 }
 header.row {
   margin: 2vh 0px;

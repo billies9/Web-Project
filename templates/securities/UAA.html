@@ -60,7 +60,7 @@
           <div class='img-container'>
             <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Article Image'/></a>
           </div>
-          <p class='title'><a href='{{ article["url"] }}'>{{ article['title'] }}</a></p>
+          <p class='title'><a href='{{ article["url"] }}' class='title-link'>{{ article['title'] }}</a></p>
           <p id='description'>{{ article['description'] }}</p>
         </li>
       {% endfor %}
