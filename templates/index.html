@@ -11,7 +11,19 @@
 
 <!-- Pre-packaged inside row using base.html inheritance -->
 {% block content %} <!--Matching block statement names (content) knows to combine here-->
-  <p class='summary'>
+
+  <div id='img-container' class='row'>
+    <div class='col-12'>
+      <div class='card col-4 statement'>
+        <div class='card-header'>
+          <h1 class='statement-title'>
+            Welcome to a new way of managing your Investments
+          </h1>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- <p class='summary'>
     This interface was designed for personal use to compile stock and company related information. This relates to company stock prices, financial information, relevant articles,
     and at some point links to company transcripts or earnings reports.
   </p>
@@ -24,19 +36,93 @@
       <li>
         <p class='content'>Portfolio page is not correctly displaying the specified portfolio upon POST of weights (not selectors for random portfolios)</p>
       </li>
-      <!-- <li>
-        <p class='content'>Organizing dropdown button to maintain consistency through page load/reloads.</p>
-      </li> -->
       <li>
         <p class='content'>Introducing a search function that allows a user to find a security (and all information) outside of the base set of securities held by the interface.</p>
       </li>
-      <!-- <li>
-        Dealing with InsecureRequestWarning handled by urllib3 - looking at documentation for solution besides disabling warnings. C:\Users\billies9\Anaconda3\lib\site-packages\urllib3\connectionpool.py:847: InsecureRequestWarning: Unverified HTTPS request is being made. Adding certificate verification is strongly advised. See: https://urllib3.readthedocs.io/en/latest/advanced-usage.html#ssl-warnings
-  InsecureRequestWarning)
-      </li> -->
       <li>
         <p class='content'>Also looking into the addition of a page / built-in functionality on existing pages that allows users to download all of the related information for reports, etc.</p>
       </li>
     </ul>
-  </p>
+  </p> -->
+  <div class='row'>
+    <div class='col-lg-4 col-md-4'>
+      <div class='card box-shadow mb-3'>
+        <div class='card-header card-title'>
+          <h3>Manage your portfolio</h3>
+        </div>
+        <div class='card-body small-pad'>
+          <ul class='card-list'>
+            <li class='card-list-item'>
+              Connect to a trading platform coming soon!
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class='col-lg-4 col-md-4'>
+      <div class='card box-shadow mb-3'>
+        <div class='card-header card-title'>
+          <h3>Search Articles and Information</h3>
+        </div>
+        <div class='card-body small-pad'>
+          <ul class='card-list'>
+            <li class='card-list-item'>
+              By security ticker
+            </li>
+            <li class='card-list-item'>
+              Other methods coming soon!
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class='col-lg-4 col-md-4'>
+      <div class='card box-shadow mb-3'>
+        <div class='card-header card-title'>
+          <h3>Compare Securities</h3>
+        </div>
+        <div class='card-body small-pad'>
+          <ul class='card-list'>
+            <li class='card-list-item'>
+              Watch price movements
+            </li>
+            <li class='card-list-item'>
+              Compare sector leaders
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id='left-right-pad-0' class='row small-pad'>
+    <div class='col-12'>
+      <div class='card box-shadow'>
+        <div class='card-header card-title'>
+          <h3>Currently in Site Development:</h3>
+        </div>
+        <div class='card-body small-pad'>
+          <ul class='card-list'>
+            <li class='card-list-item'>
+              Enter 1
+            </li>
+            <li class='card-list-item'>
+              Enter 2
+            </li>
+            <li class='card-list-item'>
+              Enter 2
+            </li>
+            <li class='card-list-item'>
+              Enter 2
+            </li>
+            <li class='card-list-item'>
+              Enter 2
+            </li>
+            <li class='card-list-item'>
+              Enter 2
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
 {% endblock %}

@@ -77,21 +77,22 @@
       {{ error_msg }}
     </div>
     {% endif %} -->
-
-    <header class='row'>
-      <div class='col-lg-12 col-md-12 col-sm-12 header'>
-        {% block index_header %}{% endblock %}
-        {% block SPX_header %}{% endblock %}
-        {% block DJIA_header %}{% endblock %}
-        {% block GOOGL_header %}{% endblock %}
-        {% block TSLA_header %}{% endblock %}
-        {% block MSFT_header %}{% endblock %}
-        {% block FB_header %}{% endblock %}
-        {% block UAA_header %}{% endblock %}
-        {% block AAPL_header %}{% endblock %}
-        {% block AMZN_header %}{% endblock %}
-      </div>
-    </header>
+    {% if title != 'HomePage' %} 
+      <header class='row'>
+        <div class='col-lg-12 col-md-12 col-sm-12 header'>
+          <!-- {% block index_header %}{% endblock %} -->
+          {% block SPX_header %}{% endblock %}
+          {% block DJIA_header %}{% endblock %}
+          {% block GOOGL_header %}{% endblock %}
+          {% block TSLA_header %}{% endblock %}
+          {% block MSFT_header %}{% endblock %}
+          {% block FB_header %}{% endblock %}
+          {% block UAA_header %}{% endblock %}
+          {% block AAPL_header %}{% endblock %}
+          {% block AMZN_header %}{% endblock %}
+        </div>
+      </header>
+    {% endif %}
     <main class='row'>
       <div class='col-lg-12 col-md-12 col-sm-12 main'>
         {% block content %}{%endblock%}

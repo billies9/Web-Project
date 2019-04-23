@@ -25,6 +25,57 @@ html {
   background-color: rgba(0, 0, 0, .1);
   font-weight: bold;
 }
+#img-container {
+  margin: 5vh 0;
+  background: url('../pictures/invest_bg.PNG');
+  background-size: cover;
+  height: 325px;
+  position: relative;
+}
+#img-container .statement {
+  position: absolute;
+  top: 17.5%;
+  left: 5%;
+  background-color: #1f77b4;
+  width: 37.5%;
+  /* min-width: 350px; */
+  /* min-width: 30vw; */
+}
+#img-container .statement .card-header {
+  background-color: #1f77b4!important;
+}
+#img-container .statement .card-header .statement-title {
+    color: #f8f9fa;
+}
+.card-title {
+  color: #1f77b4;
+  background-color: #fff!important;
+  border-bottom: none!important;
+  padding-bottom: .4rem;
+}
+.card-list {
+  list-style: none;
+  padding: 0;
+  margin-left: 0.5em;
+}
+.card-list .card-list-item::before {
+  content: "\2022";
+  color: #7bab9c;
+  font-weight: bold;
+  display: inline-block;
+  width: 0.3em;
+}
+.box-shadow {
+  border: 1.5px solid #7bab9c;
+  border-radius: 0;
+  box-shadow: 5px 5px 5px #accecd;
+}
+.small-pad {
+  padding: .75rem;
+}
+#left-right-pad-0 {
+  padding: .75rem 0rem;
+}
 header.row {
   margin: 2vh 0px;
   min-height: 2em;
