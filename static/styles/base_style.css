@@ -38,7 +38,7 @@ html {
   left: 5%;
   background-color: #1f77b4;
   width: 37.5%;
-  /* min-width: 350px; */
+  min-width: 350px;
   /* min-width: 30vw; */
 }
 #img-container .statement .card-header {
@@ -85,6 +85,16 @@ h1 {
 }
 .main {
   padding: 0 30px;
+}
+.btn-primary {
+  background-color: #accecd;
+  border-color: #000000;
+  border-width: 1.5px;
+  color: #000000;
+}
+.btn-primary:hover {
+  background-color: #7bab9c;
+  border-color: #000000;
 }
 .footer {
   text-align: right;

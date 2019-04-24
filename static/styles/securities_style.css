@@ -78,16 +78,6 @@
 .enter, .choose {
   display: inline-block;
 }
-.btn-primary {
-  background-color: #accecd;
-  border-color: #000000;
-  border-width: 1.5px;
-  color: #000000;
-}
-.btn-primary:hover {
-  background-color: #7bab9c;
-  border-color: #000000;
-}
 .btn-link {
   color: #1f77b4;
 }
