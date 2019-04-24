@@ -37,13 +37,32 @@ class Security_Portfolio_data():
         df['date'] = pd.to_datetime(df['date'].str.join('-'))
         df['weekday'] = df['date'].dt.dayofweek
         df = df[df['weekday'] < 5]
+        print(df)
+        if df.empty:
+            df = self.load_bad_data_content(self.dates[0], self.dates[1])
+            print('df')
+            print(df)
+        elif df.empty is False and ('2019-01-01' <= self.dates[0] <= '2019-03-05' or '2019-01-01' <= self.dates[1] <= '2019-03-05'):
+            extended_frame = self.load_bad_data_content(self.dates[0], self.dates[1])
+            print(extended_frame)
         return df
+
+    def load_bad_data_content(self, start, end):
+        headers = {"Accept":"application/json",
+                    "Authorization":"Bearer qLUA59t6iQGIgASUpKY9AstSAiNC"}
+        r = (requests.get('https://sandbox.tradier.com/v1/markets/history?symbol={symbol}&interval=daily&start={start}&end={end}'.format(symbol=self.ticker, start=start, end=end),
+                headers=headers))
+        data = json.loads(r.text)
+
+        frame = pd.DataFrame(data['history']['day'])
+        return frame.drop('volume', axis=1).set_index('date', inplace=True)
 
     def parse_date_content(self, ticker = None):
         if ticker != None:
             self.ticker = ticker
         df = self.load_content()
         df.set_index('date', inplace = True)
+
         return df.loc[self.dates[0]:self.dates[1], :]
 
     def get_match_val(self):
@@ -87,19 +106,19 @@ class Security_Portfolio_data():
                 return_over_pd = (close_df.loc[self.dates[1], ticker + ' close'] - close_df.loc[self.dates[0], ticker + ' close']) / close_df.loc[self.dates[0], ticker + ' close']
                 _[ticker] = [return_over_pd,]
                 on_weights[ticker] = 'on'
-
         covar_df = pd.DataFrame(_)
         cov_matrix = np.array(covariance_matrix(covar_df.columns, close_df))
 
         ord_weights = OrderedDict(sorted(weights.items(), key=lambda k: k[0]))
         lst_weights = np.array([float(val) for key, val in ord_weights.items() if val != ''])
 
-        results[0, 0] = returns_df.sum(axis = 1) * 100 # annualize?
-        results[1, 0] = np.sqrt(np.dot(lst_weights.T, np.dot(cov_matrix, lst_weights))) * 100  # Std Dev.
+        results[0, 0] = returns_df.sum(axis = 1)  # annualize?
+        results[1, 0] = np.sqrt(np.dot(lst_weights.T, np.dot(cov_matrix, lst_weights))) / 100
         results[2, 0] = (results[0, 0] - .03) / results[1, 0]
         for j in range(len(lst_weights)):
             results[j + 3, 0] = lst_weights[j]
-        results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(_.keys()))
+        results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(sorted(_.keys())))
+        print(results_frame)
         return results_frame, on_weights
 
     def portfolio_rand_rand_weights(self, weights):
@@ -115,21 +134,19 @@ class Security_Portfolio_data():
         df = pd.DataFrame.from_dict(_, orient='columns')
         cov_matrix = np.array(covariance_matrix(df.columns, pct_df))
         ret_list = df.values.tolist()
-        num_portfolios = 4000 # maybe allow user input in later versions...
+        num_portfolios = 1500 # maybe allow user input in later versions...
         results = np.zeros((3 + len(df.columns), num_portfolios))
         nums = np.random.random(size = (num_portfolios, len(df.columns)))
 
         days = pd.to_datetime(self.dates[1]) - pd.to_datetime(self.dates[0])
         for i in range(num_portfolios):
             weights = np.array(nums[i] / np.sum(nums[i]))
-
-            port_return = np.sum(ret_list * weights) * (252/(days.days)) # Check returns list and match with weights in std deviation
-
-            port_deviation = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights))) * np.sqrt(252/days.days)
+            port_return = np.sum(ret_list * weights)  #* (252/(days.days)) # Check returns list and match with weights in std deviation
+            port_deviation = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights))) #* np.sqrt(252/days.days)
 
             results[0, i] = port_return
-            results[1, i] = port_deviation
-            results[2, i] = (results[0, i] - .03) / results[1, i]
+            results[1, i] = port_deviation / 100
+            results[2, i] = (results[0, i] - .03) /  results[1, i]
             for j in range(len(weights)):
                 results[j + 3, i] = weights[j]
 
@@ -336,16 +353,61 @@ class Build_graph():
         return graph
 
     def portfolio_graph(self, weights):
+        # try:
+        user_data, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
+        print(user_data)
+            # rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
+            # print(user_data)
+            # print(rand_data)
+        # except:
+            # rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
+            # print(rand_data)
+        rand_plot = go.Scatter(
+                x=rand_data['Portfolio Deviation'],
+                y=rand_data['Portfolio Return'],
+                mode='markers',
+                hoverinfo='x+y',
+                marker=dict(color='#1f77b4'),
+                name='Random Portfolio'
+        )
         try:
-            h, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
-            i = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
-
+            user_plot = go.Scatter(
+                x=user_data['Portfolio Deviation'],
+                y=user_data['Portfolio Return'],
+                mode='markers',
+                hoverinfo='x+y',
+                marker=dict(color='#accecd'),
+                name='User Portfolio'
+            )
+            end_data = [rand_plot, user_plot]
         except:
-            i = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
-
-
-        return
-
+            end_data = [rand_plot]
+        layout = go.Layout(
+                title = 'Portfolio Graph',
+                yaxis = go.layout.YAxis(
+                    title = 'Portfolio Return',
+                    tickformat = ',.2%',
+                    hoverformat = ',.4%',
+                    automargin = True,
+                    mirror=True,
+                    ticks='outside',
+                    showline=True,
+                ),
+                xaxis = go.layout.XAxis(
+                    title = 'Portfolio Deviation',
+                    tickformat = ',.2%',
+                    hoverformat = ',.4%',
+                    automargin = True,
+                    mirror=True,
+                    ticks='outside',
+                    showline=True,
+                ),
+                showlegend = True,
+                legend = dict(x=.9, y= .8),
+        )
+        fig = go.Figure(data = end_data, layout = layout)
+        graph = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+        return graph
 
 
 
