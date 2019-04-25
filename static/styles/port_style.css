@@ -1,6 +1,10 @@
 .date-row {
   margin-bottom: 1.5em;
 }
+.round-right-corners {
+  border-top-right-radius: .25rem!important;
+  border-bottom-right-radius: .25rem!important;
+}
 .weights-title {
   padding: .5vh .5vw;
 }
