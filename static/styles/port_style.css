@@ -5,7 +5,12 @@
   padding: .5vh .5vw;
 }
 .weights {
-  margin-left: .5vw;
+  margin: 0 .5vw .5vh;
+  /* margin-left: .5vw;
+  margin-bottom: .5vh; */
+}
+.graph {
+  padding: 0;
 }
 #titles .titles > * {
   padding: 0;

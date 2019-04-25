@@ -13,7 +13,7 @@
 
 {% block construct %}
 <div class='row weights-graph'>
-  <div class='col-lg-6 weights box-shadow'>
+  <div class='col-lg-5 weights box-shadow'>
     <div class='row weights-title'>
       <h2>Give weights to securities:</h2>
     </div>
@@ -58,14 +58,12 @@
       {% endfor %}
     </form>
   </div>
-  <div id='graph' class='col-lg-5 graph'>
-    <div class='col-lg-6 graph' id='graph'>
-      <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
-      <script> $(document).ready(function() {
-        plot({{ graph|safe }}, 'graph')
-        });
-      </script>
-    </div>
+  <div id='graph' class='col-lg-6 graph'>
+    <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
+    <script> $(document).ready(function() {
+      plot({{ graph|safe }}, 'graph')
+      });
+    </script>
   </div>
 </div>
 
