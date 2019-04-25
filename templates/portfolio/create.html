@@ -59,11 +59,13 @@
     </form>
   </div>
   <div id='graph' class='col-lg-6 graph'>
-    <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
-    <script> $(document).ready(function() {
-      plot({{ graph|safe }}, 'graph')
-      });
-    </script>
+    <!-- <div class='col-lg-6 graph'> -->
+      <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
+      <script> $(document).ready(function() {
+        plot({{ graph|safe }}, 'graph')
+        });
+      </script>
+    <!-- </div> -->
   </div>
 </div>
 
