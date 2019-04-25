@@ -37,15 +37,8 @@ class Security_Portfolio_data():
         df['date'] = pd.to_datetime(df['date'].str.join('-'))
         df['weekday'] = df['date'].dt.dayofweek
         df = df[df['weekday'] < 5]
-        print(df)
-        if df.empty:
-            df = self.load_bad_data_content(self.dates[0], self.dates[1])
-            print('df')
-            print(df)
-        elif df.empty is False and ('2019-01-01' <= self.dates[0] <= '2019-03-05' or '2019-01-01' <= self.dates[1] <= '2019-03-05'):
-            extended_frame = self.load_bad_data_content(self.dates[0], self.dates[1])
-            print(extended_frame)
-        return df
+        df.set_index('date', inplace=True)
+        return df.loc[self.dates[0]:self.dates[1], :]
 
     def load_bad_data_content(self, start, end):
         headers = {"Accept":"application/json",
@@ -55,15 +48,17 @@ class Security_Portfolio_data():
         data = json.loads(r.text)
 
         frame = pd.DataFrame(data['history']['day'])
-        return frame.drop('volume', axis=1).set_index('date', inplace=True)
+        frame.drop(['volume'], axis=1, inplace=True)
+        frame.set_index('date', inplace=True)
+        return frame
 
     def parse_date_content(self, ticker = None):
         if ticker != None:
             self.ticker = ticker
         df = self.load_content()
-        df.set_index('date', inplace = True)
-
-        return df.loc[self.dates[0]:self.dates[1], :]
+        if df.empty or (df.index[0] != self.dates[0] and df.index[1] != self.dates[1]):
+            return self.load_bad_data_content(self.dates[0], self.dates[1])
+        return df
 
     def get_match_val(self):
         r = requests.get('https://financialmodelingprep.com/api/stock/list/all?datatype=json')
@@ -106,6 +101,7 @@ class Security_Portfolio_data():
                 return_over_pd = (close_df.loc[self.dates[1], ticker + ' close'] - close_df.loc[self.dates[0], ticker + ' close']) / close_df.loc[self.dates[0], ticker + ' close']
                 _[ticker] = [return_over_pd,]
                 on_weights[ticker] = 'on'
+
         covar_df = pd.DataFrame(_)
         cov_matrix = np.array(covariance_matrix(covar_df.columns, close_df))
 
@@ -113,12 +109,11 @@ class Security_Portfolio_data():
         lst_weights = np.array([float(val) for key, val in ord_weights.items() if val != ''])
 
         results[0, 0] = returns_df.sum(axis = 1)  # annualize?
-        results[1, 0] = np.sqrt(np.dot(lst_weights.T, np.dot(cov_matrix, lst_weights))) / 100
+        results[1, 0] = np.sqrt(np.dot(lst_weights.T, np.dot(cov_matrix, lst_weights)))
         results[2, 0] = (results[0, 0] - .03) / results[1, 0]
         for j in range(len(lst_weights)):
             results[j + 3, 0] = lst_weights[j]
         results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(sorted(_.keys())))
-        print(results_frame)
         return results_frame, on_weights
 
     def portfolio_rand_rand_weights(self, weights):
@@ -140,12 +135,12 @@ class Security_Portfolio_data():
 
         days = pd.to_datetime(self.dates[1]) - pd.to_datetime(self.dates[0])
         for i in range(num_portfolios):
+
             weights = np.array(nums[i] / np.sum(nums[i]))
             port_return = np.sum(ret_list * weights)  #* (252/(days.days)) # Check returns list and match with weights in std deviation
             port_deviation = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights))) #* np.sqrt(252/days.days)
-
             results[0, i] = port_return
-            results[1, i] = port_deviation / 100
+            results[1, i] = port_deviation
             results[2, i] = (results[0, i] - .03) /  results[1, i]
             for j in range(len(weights)):
                 results[j + 3, i] = weights[j]
@@ -353,21 +348,22 @@ class Build_graph():
         return graph
 
     def portfolio_graph(self, weights):
-        # try:
-        user_data, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
-        print(user_data)
-            # rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
-            # print(user_data)
-            # print(rand_data)
-        # except:
-            # rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
-            # print(rand_data)
+        try:
+            user_data, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
+            rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
+        except:
+            rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
         rand_plot = go.Scatter(
                 x=rand_data['Portfolio Deviation'],
                 y=rand_data['Portfolio Return'],
                 mode='markers',
                 hoverinfo='x+y',
-                marker=dict(color='#1f77b4'),
+                marker=dict(color=rand_data['Sharpe Ratio'],
+                            colorscale=[[0.0, 'rgb(31, 119, 180)'], [0.5, 'rgb(172,206,205)'], [1.0, 'rgb(123,171,156)']],
+                            size=12,
+                            colorbar=dict(lenmode='fraction',
+                                        len=0.75,
+                                        thickness=20)),
                 name='Random Portfolio'
         )
         try:
@@ -376,7 +372,10 @@ class Build_graph():
                 y=user_data['Portfolio Return'],
                 mode='markers',
                 hoverinfo='x+y',
-                marker=dict(color='#accecd'),
+                marker=dict(color='#accecd',
+                            size=14,
+                            line=dict(color='rgb(0, 0, 0)',
+                                        width=2)),
                 name='User Portfolio'
             )
             end_data = [rand_plot, user_plot]
@@ -403,7 +402,7 @@ class Build_graph():
                     showline=True,
                 ),
                 showlegend = True,
-                legend = dict(x=.9, y= .8),
+                legend = dict(orientation='v'),
         )
         fig = go.Figure(data = end_data, layout = layout)
         graph = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
