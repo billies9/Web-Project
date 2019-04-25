@@ -106,6 +106,9 @@ h1 {
   border-radius: 0;
   background-color: #f8f9fa;
 }
+.block-all-corners {
+  border-radius: 0;
+}
 .footer {
   text-align: right;
   padding-right: 30px;
