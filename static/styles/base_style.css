@@ -37,15 +37,13 @@ html {
   top: 17.5%;
   left: 5%;
   background-color: #1f77b4;
-  width: 37.5%;
-  min-width: 350px;
-  /* min-width: 30vw; */
 }
 #img-container .statement .card-header {
   background-color: #1f77b4!important;
 }
 #img-container .statement .card-header .statement-title {
-    color: #f8f9fa;
+  font-size: 2.25rem!important;
+  color: #f8f9fa;
 }
 .card-title {
   color: #1f77b4;
@@ -106,10 +104,13 @@ h1 {
   border-radius: 0;
   background-color: #f8f9fa;
 }
-.block-all-corners {
-  border-radius: 0;
-}
 .footer {
   text-align: right;
   padding-right: 30px;
 }
+
+/* @media only screen and (max-width: 800px) {
+  #img-container .statement {
+    width: 40%;
+  }
+} */
