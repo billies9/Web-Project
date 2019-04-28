@@ -56,7 +56,10 @@ class Security_Portfolio_data():
         if ticker != None:
             self.ticker = ticker
         df = self.load_content()
-        if df.empty or (df.index[0] != self.dates[0] and df.index[1] != self.dates[1]):
+        todays_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        # if (df.index[-1] != todays_date - timedelta(1)) and df.index[-1] != (todays_date - timedelta(2)):
+        #     print('not this weekend')
+        if df.empty or (df.index[0] != self.dates[0] and df.index[-1] != self.dates[1]):
             return self.load_bad_data_content(self.dates[0], self.dates[1])
         return df
 
