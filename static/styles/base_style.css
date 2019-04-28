@@ -1,11 +1,14 @@
 :root {
   --hover-link: #1f77b4;
+  --border-color: #7bab9c;
+  --shadow-color: #accecd;
 }
 html {
   box-sizing: border-box;
+  min-width: 320px;
 }
 * {
-  font-family: Arial;
+  font-family: Arimo, Arial;
 }
 .container {
   max-width: 95%;
@@ -36,17 +39,17 @@ html {
   position: absolute;
   top: 17.5%;
   left: 5%;
-  background-color: #1f77b4;
+  background-color: var(--hover-link);
 }
 #img-container .statement .card-header {
-  background-color: #1f77b4!important;
+  background-color: var(--hover-link)!important;
 }
 #img-container .statement .card-header .statement-title {
   font-size: 2.25rem!important;
   color: #f8f9fa;
 }
 .card-title {
-  color: #1f77b4;
+  color: var(--hover-link);
   background-color: #fff!important;
   border-bottom: none!important;
   padding-bottom: .4rem;
@@ -58,15 +61,15 @@ html {
 }
 .card-list .card-list-item::before {
   content: "\2022";
-  color: #7bab9c;
+  color: var(--border-color);
   font-weight: bold;
   display: inline-block;
   width: 0.3em;
 }
 .box-shadow {
-  border: 1.5px solid #7bab9c;
+  border: 1.5px solid var(--border-color);
   border-radius: 0;
-  box-shadow: 5px 5px 5px #accecd;
+  box-shadow: 5px 5px 5px var(--shadow-color);
 }
 .small-pad {
   padding: .75rem;
@@ -84,8 +87,11 @@ h1 {
 .main {
   padding: 0 30px;
 }
+.navbar-light .navbar-nav .show>.nav-link {
+  color: var(--hover-link)!important;
+}
 .btn-primary {
-  background-color: #accecd!important;
+  background-color: var(--shadow-color)!important;
   border-color: #000000;
   border-width: 1.5px;
   color: #000000;
@@ -93,7 +99,7 @@ h1 {
 .btn-primary:hover,
 .btn-primary:active,
 .btn-primary:not(:disabled):not(.disabled):active {
-  background-color: #7bab9c;
+  background-color: var(--border-color);
   border-color: #000000;
 }
 .btn-primary:active:focus,
@@ -109,8 +115,14 @@ h1 {
   padding-right: 30px;
 }
 
-/* @media only screen and (max-width: 800px) {
-  #img-container .statement {
-    width: 40%;
+@media only screen and (max-width: 576px) {
+  #img-container .statement .card-header .statement-title {
+    font-size: 1.75rem!important;
   }
-} */
+  .card-title h3 {
+    font-size: 1.2rem!important;
+  }
+  .card-list-item {
+    font-size: 0.9rem!important;
+  }
+}
