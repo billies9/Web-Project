@@ -116,7 +116,7 @@ h1 {
 }
 
 @media only screen and (max-width: 576px) {
-  #img-container .statement .card-header .statement-title {
+  .statement-title {
     font-size: 1.75rem!important;
   }
   .card-title h3 {

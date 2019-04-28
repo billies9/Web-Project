@@ -1,4 +1,7 @@
-.img-container {
+.dates {
+  margin-bottom: .5em;
+}
+.article-img-container {
   width: 30%;
   min-width: 120px;
   float: left;
@@ -16,7 +19,8 @@
 }
 .articles:hover .article:hover {
   opacity: 1;
-  box-shadow: 3px 3px 2px black;
+  border: 2px solid #7bab9c!important;
+  box-shadow: 5px 5px 5px #accecd;
 }
 .card-header {
   padding: .4rem .9rem;

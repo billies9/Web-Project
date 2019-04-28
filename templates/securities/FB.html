@@ -38,12 +38,18 @@
 <div class='row graphs'>
   <div class='col-lg-6 price' id='price'>
     <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
-    <script> plot({{ price|safe }}, 'price')</script>
+    <script> $(document).ready(function() {
+          plot({{ price|safe }}, 'price')
+          });
+    </script>
   </div>
 
   <div class='col-lg-6 regression' id='regression'>
     <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
-    <script> plot({{ regress|safe }}, 'regression')</script>
+    <script> $(document).ready(function() {
+          plot({{ regress|safe }}, 'regression')
+          });
+    </script>
   </div>
 </div>
 
@@ -56,7 +62,7 @@
     <ul class='list-unstyled row articles'>
       {% for row, article in articles.iterrows() %}
         <li class='list-item border-top border-bottom border-right col-lg-6 article'>
-          <div class='img-container'>
+          <div class='article-img-container'>
             <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Article Image'/></a>
           </div>
           <p class='title'><a href='{{ article["url"] }}' class='title-link'>{{ article['title'] }}</a></p>

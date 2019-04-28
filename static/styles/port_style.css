@@ -8,10 +8,13 @@
 .weights-title {
   padding: .5vh .5vw;
 }
-.weights {
+.weights,
+#footnotes {
   margin: 0 .5vw .5vh;
-  /* margin-left: .5vw;
-  margin-bottom: .5vh; */
+}
+.footnote {
+  vertical-align: super;
+  font-size:.5em;
 }
 .graph {
   padding: 0;
@@ -25,4 +28,10 @@
 .security-weight {
   text-align:left;
   padding: 0;
+}
+.extra-pad {
+  padding-left: 25px;
+}
+.port-second-level-list {
+  padding-left: 25px;
 }

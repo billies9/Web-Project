@@ -13,7 +13,46 @@
 
 {% block construct %}
 <div class='row weights-graph'>
-  <div class='col-lg-5 weights box-shadow'>
+  <div id='graph' class='col-lg-6 order-md-2 graph'>
+    {% if not graph %}
+    <div class='row'>
+      <div class='col-11 extra-pad'>
+        <h1 class='statement-title'>Directions for Mean-Variance Analysis:<sup class='footnote'><a href='#footnote1'>[1]</a></sup></h1>
+      </div>
+    </div>
+    <div class='row'>
+      <div class='col-11'>
+        <ol class='port-first-level-list'>
+          <li class='list-item first-level'>
+            Select a Beginning and Ending date from the form dropdown calendars to the left
+          </li>
+          <li>
+            Then either:
+            <ul class='port-second-level-list'>
+              <li class='list-item second-level'>
+                <i>Select</i> securities by checking the checkboxes for randomly generated weights or;
+              </li>
+              <li class='list-item second-level'>
+                <i>Define</i> portfolio weights as text inputs to compare against an indentical set of securities with randomly generated weights
+              </li>
+            </ul>
+          </li>
+          <li class='list-item first-level'>
+            Click the <b>Submit</b> Button
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    {% else %}
+      <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
+      <script> $(document).ready(function() {
+        plot({{ graph|safe }}, 'graph')
+      });
+      </script>
+    {% endif %}
+  </div>
+  <div class='col-lg-5 order-md-1 weights box-shadow'>
     <div class='row weights-title'>
       <h2>Give weights to securities:</h2>
     </div>
@@ -58,13 +97,9 @@
       {% endfor %}
     </form>
   </div>
-  <div id='graph' class='col-lg-6 graph'>
-    <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
-    <script> $(document).ready(function() {
-      plot({{ graph|safe }}, 'graph')
-      });
-    </script>
-  </div>
+</div>
+<div id='footnotes' class='row'>
+  <p id='footnote1'>[1] Weekend dates and holidays are currently not supported to conduct Mean-Variance Analysis </p>
 </div>
 
 
