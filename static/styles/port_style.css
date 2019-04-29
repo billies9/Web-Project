@@ -5,6 +5,10 @@
   border-top-right-radius: .25rem!important;
   border-bottom-right-radius: .25rem!important;
 }
+.round-left-corners {
+  border-top-left-radius: .25rem!important;
+  border-bottom-left-radius: .25rem!important;
+}
 .weights-title {
   padding: .5vh .5vw;
 }
