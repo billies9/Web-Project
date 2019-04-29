@@ -59,6 +59,7 @@ class Security_Portfolio_data():
         todays_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         # if (df.index[-1] != todays_date - timedelta(1)) and df.index[-1] != (todays_date - timedelta(2)):
         #     print('not this weekend')
+        print(df)
         if df.empty or (df.index[0] != self.dates[0] and df.index[-1] != self.dates[1]):
             return self.load_bad_data_content(self.dates[0], self.dates[1])
         return df
@@ -353,6 +354,7 @@ class Build_graph():
     def portfolio_graph(self, weights):
         try:
             user_data, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
+            print(user_data)
             rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
         except:
             rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
@@ -422,6 +424,9 @@ class Build_graph():
 
 
 #--------------------------------------------------------------------------------------------------------------------------
+# Outdated code that may prove useful in coming development projects
+
+
 
 # def build_interactive_graph(frame_title, type = None, weights = None, dates = None, date_type = 'hist'):
 #     """ Type: 'P' is Price graphing;

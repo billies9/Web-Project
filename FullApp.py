@@ -233,36 +233,6 @@ def TSLA(ticker = 'TSLA'):
 @app.route('/portfolio/create', methods=['GET', 'POST'])
 def create_portoflio():
     return Security('').build_portfolio()
-    # title = 'Portfolio Construction'
-    # # names = import_names()
-    # weights = {}
-    # if request.method =='POST':
-    #     dates = (request.form.get('date1'), request.form.get('date2'))
-    #     if dates[0] > dates[1]:
-    #         # Want something to flash here...
-    #         return render_template('portfolio/create.html',
-    #                                 title=title,
-    #                                 stocks=mapping,
-    #                                 resources=CDN.render())
-    #     weights = {ticker: weight for (ticker, weight) in request.form.items() if ticker in mapping.values()}
-    #     script1, div1 = components(build_interactive_graph('Portfolio', 'Port', weights = weights, dates = dates))
-    #     return render_template('portfolio/create.html',
-    #                             title=title,
-    #                             stocks=mapping,
-    #                             weights=weights,
-    #                             port=script1,
-    #                             div1=div1,
-    #                             resources=CDN.render())
-    # return render_template('portfolio/create.html',
-    #                         title=title,
-    #                         stocks=mapping)
-
 
 if __name__ == '__main__':
     app.run()
-
-
-# ---------------------------------------------------------------------
-# @app.route('/', methods=['GET', 'POST'])
-# def get_page():
-#     return redirect(url_for(request.form['security']))
