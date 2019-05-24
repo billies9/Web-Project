@@ -28,8 +28,11 @@ class Security_Portfolio_data():
         self.date_type = dates_type[1]
 
     def load_content(self):
-        r = requests.get('https://financialmodelingprep.com/api/company/historical-price/{ticker}?serietype=candle&datatype=json'.format(ticker = self.ticker))
-        data = json.loads(r.text)
+        try:
+            r = requests.get('https://financialmodelingprep.com/api/company/historical-price/{ticker}?serietype=candle&datatype=json'.format(ticker = self.ticker), timeout=5)
+            data = json.loads(r.text)
+        except:
+            return self.load_bad_data_content(self.dates[0], self.dates[1])
         df = pd.DataFrame(data['historical'])
 
         # Parse through date column
@@ -49,6 +52,8 @@ class Security_Portfolio_data():
 
         frame = pd.DataFrame(data['history']['day'])
         frame.drop(['volume'], axis=1, inplace=True)
+        frame['weekday'] = pd.to_datetime(frame['date']).dt.dayofweek
+        frame = frame[frame['weekday'] < 5]
         frame.set_index('date', inplace=True)
         return frame
 
@@ -59,7 +64,6 @@ class Security_Portfolio_data():
         todays_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         # if (df.index[-1] != todays_date - timedelta(1)) and df.index[-1] != (todays_date - timedelta(2)):
         #     print('not this weekend')
-        print(df)
         if df.empty or (df.index[0] != self.dates[0] and df.index[-1] != self.dates[1]):
             return self.load_bad_data_content(self.dates[0], self.dates[1])
         return df
@@ -95,62 +99,103 @@ class Security_Portfolio_data():
 
     def portfolio_rand_user_weights(self, weights):
         # Defines random selection of securities and weights for use when selection or weight defined by user
-        close_df, returns_df = self.portfolio_close_returns(weights)
 
-        results = np.zeros((3 + len(returns_df.columns), 1))
-        _, on_weights = {}, {}
-        for column in close_df.columns: # WIll run over twice becasue of close and returns - Do I need daily returns?
-            ticker = column.split(' ')[0]
-            if ticker != _.keys():
-                return_over_pd = (close_df.loc[self.dates[1], ticker + ' close'] - close_df.loc[self.dates[0], ticker + ' close']) / close_df.loc[self.dates[0], ticker + ' close']
-                _[ticker] = [return_over_pd,]
-                on_weights[ticker] = 'on'
+        built_frame = pd.DataFrame(columns = [key for key in weights.keys() if weights[key] != ''])
+        on_weights = {}
+        for key in weights.keys():
+            if weights[key] != '':
+                built_frame[key] = self.parse_date_content(key)['close']
+                on_weights[key] = 'on'
 
-        covar_df = pd.DataFrame(_)
-        cov_matrix = np.array(covariance_matrix(covar_df.columns, close_df))
+        returns_daily = built_frame.pct_change()
+        returns_annual = returns_daily.mean()
 
-        ord_weights = OrderedDict(sorted(weights.items(), key=lambda k: k[0]))
-        lst_weights = np.array([float(val) for key, val in ord_weights.items() if val != ''])
+        cov_daily = returns_daily.cov()
+        cov_annual = cov_daily
+        lst_weights = np.array([float(x) for x in list(weights.values()) if x != ''])
 
-        results[0, 0] = returns_df.sum(axis = 1)  # annualize?
-        results[1, 0] = np.sqrt(np.dot(lst_weights.T, np.dot(cov_matrix, lst_weights)))
-        results[2, 0] = (results[0, 0] - .03) / results[1, 0]
-        for j in range(len(lst_weights)):
-            results[j + 3, 0] = lst_weights[j]
-        results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(sorted(_.keys())))
-        return results_frame, on_weights
+        returns = np.dot(lst_weights, returns_annual)
+        volatility = np.sqrt(np.dot(lst_weights.T, np.dot(cov_annual, lst_weights)))
+
+        port_returns = []
+        port_volatility = []
+        sharpe_ratio = []
+        stock_weights = []
+
+        port_returns.append(returns)
+        port_volatility.append(volatility)
+        stock_weights = lst_weights
+        sharpe_ratio.append(returns / volatility)
+
+        portfolio = {'Portfolio Return': port_returns,
+             'Portfolio Deviation': port_volatility,
+             'Sharpe Ratio': sharpe_ratio}
+
+        # extend original dictionary to accomodate each ticker and weight in the portfolio
+        for ticker, weight in weights.items():
+            portfolio[ticker + ' Weight'] = weight
+        # make a nice dataframe of the extended dictionary
+        df = pd.DataFrame(portfolio)
+
+        # get better labels for desired arrangement of columns
+        # column_order = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + [stock+' Weight' for stock in selected]
+
+        # reorder dataframe columns
+        # df = df[column_order]
+
+        return df, on_weights
 
     def portfolio_rand_rand_weights(self, weights):
-        # Select of securities
-        _ = {}
-        pct_df = pd.DataFrame()
+        # # Select of securities
+        built_frame = pd.DataFrame(columns = [key for key in weights.keys() if weights[key] == 'on'])
         for key in weights.keys():
             if weights[key] == 'on':
-                frame = self.parse_date_content(key)
-                pct_df[key + ' returns'] = frame['close'].pct_change().dropna() * 100
-                _[key] = [(frame['close'][-1] - frame['close'][0]) / frame['close'][0]]
+                built_frame[key] = self.parse_date_content(key)['close']
 
-        df = pd.DataFrame.from_dict(_, orient='columns')
-        cov_matrix = np.array(covariance_matrix(df.columns, pct_df))
-        ret_list = df.values.tolist()
-        num_portfolios = 1500 # maybe allow user input in later versions...
-        results = np.zeros((3 + len(df.columns), num_portfolios))
-        nums = np.random.random(size = (num_portfolios, len(df.columns)))
+        returns_daily = built_frame.pct_change()
+        returns_annual = returns_daily.mean()
 
-        days = pd.to_datetime(self.dates[1]) - pd.to_datetime(self.dates[0])
-        for i in range(num_portfolios):
+        cov_daily = returns_daily.cov()
+        cov_annual = cov_daily
 
-            weights = np.array(nums[i] / np.sum(nums[i]))
-            port_return = np.sum(ret_list * weights)  #* (252/(days.days)) # Check returns list and match with weights in std deviation
-            port_deviation = np.sqrt(np.dot(weights.T, np.dot(cov_matrix, weights))) #* np.sqrt(252/days.days)
-            results[0, i] = port_return
-            results[1, i] = port_deviation
-            results[2, i] = (results[0, i] - .03) /  results[1, i]
-            for j in range(len(weights)):
-                results[j + 3, i] = weights[j]
+        # empty lists to store returns, volatility and weights of imiginary portfolios
+        port_returns = []
+        port_volatility = []
+        sharpe_ratio = []
+        stock_weights = []
 
-        results_frame = pd.DataFrame(results.T, columns = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + list(_.keys()))
-        return results_frame
+        # set the number of combinations for imaginary portfolios
+        selected = list(built_frame.columns)
+        num_assets = len(selected)
+        num_portfolios = 1500
+
+        # populate the empty lists with each portfolios returns,risk and weights
+        for single_portfolio in range(num_portfolios):
+            weights = np.random.random(num_assets)
+            weights /= np.sum(weights)
+            returns = np.dot(weights, returns_annual)
+            volatility = np.sqrt(np.dot(weights.T, np.dot(cov_annual, weights)))
+            port_returns.append(returns)
+            port_volatility.append(volatility)
+            sharpe_ratio.append(returns / volatility)
+            stock_weights.append(weights)
+
+        portfolio = {'Portfolio Return': port_returns,
+             'Portfolio Deviation': port_volatility,
+             'Sharpe Ratio': sharpe_ratio}
+
+        # extend original dictionary to accomodate each ticker and weight in the portfolio
+        for counter,symbol in enumerate(selected):
+            portfolio[symbol + ' Weight'] = [Weight[counter] for Weight in stock_weights]
+        # make a nice dataframe of the extended dictionary
+        df = pd.DataFrame(portfolio)
+
+        # get better labels for desired arrangement of columns
+        column_order = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio'] + [stock+' Weight' for stock in selected]
+
+        # reorder dataframe columns
+        df = df[column_order]
+        return df
 
     def get_company_info(self):
         r = requests.get('https://financialmodelingprep.com/api/company/profile/{}?datatype=json'.format(self.ticker))
@@ -354,31 +399,75 @@ class Build_graph():
     def portfolio_graph(self, weights):
         try:
             user_data, _ = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_user_weights(weights)
-            print(user_data)
             rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(_)
         except:
             rand_data = Security_Portfolio_data('', (self.dates, self.date_type)).portfolio_rand_rand_weights(weights)
+
+        # --------------------------------------------------------
+        # add in defined securities to show all lines
+        for ticker, val in weights.items():
+            if ticker + ' Weight' not in list(rand_data):
+                try:
+                    if ticker + ' Weight' not in list(user_data) or val == '':
+                        user_data[ticker + ' Weight'] = 0
+                        rand_data[ticker + ' Weight'] = 0
+                except:
+                    rand_data[ticker + ' Weight'] = 0
+        # --------------------------------------------------------
+        rand_text = ['Portfolio: ' + str(x + 1) + '<br>' +
+                'Return: ' + str(round(100 * rand_data.loc[x, 'Portfolio Return'], 4)) + '%<br>' +
+                'Sigma: ' + str(round(100 * rand_data.loc[x, 'Portfolio Deviation'], 4)) + '%<br>' +
+                'Sharpe Ratio: ' + str(round(rand_data.loc[x, 'Sharpe Ratio'], 4)) + '<br>' +
+                'AAPL Weight: ' + str(round(100 * rand_data.loc[x, 'AAPL Weight'], 4)) + '%<br>' +
+                'AMZN Weight: ' + str(round(100 * rand_data.loc[x, 'AMZN Weight'], 4)) + '%<br>' +
+                'FB Weight: ' + str(round(100 * rand_data.loc[x, 'FB Weight'], 4)) + '%<br>' +
+                'GOOGL Weight: ' + str(round(100 * rand_data.loc[x, 'GOOGL Weight'], 4)) + '%<br>' +
+                'MSFT Weight: ' + str(round(100 * rand_data.loc[x, 'MSFT Weight'], 4)) + '%<br>' +
+                'TSLA Weight: ' + str(round(100 * rand_data.loc[x, 'TSLA Weight'], 4)) + '%<br>' +
+                'UAA Weight: ' + str(round(100 * rand_data.loc[x, 'UAA Weight'], 4)) + '%'
+                 for x in range(len(rand_data))
+                 ]
+
         rand_plot = go.Scatter(
                 x=rand_data['Portfolio Deviation'],
                 y=rand_data['Portfolio Return'],
                 mode='markers',
-                hoverinfo='x+y',
+                text=rand_text,
+                hoverinfo='text',
                 marker=dict(color=rand_data['Sharpe Ratio'],
                             colorscale=[[0.0, 'rgb(31, 119, 180)'], [0.5, 'rgb(172,206,205)'], [1.0, 'rgb(123,171,156)']],
-                            size=12,
+                            size=8,
                             colorbar=dict(lenmode='fraction',
                                         len=0.75,
-                                        thickness=20)),
+                                        thickness=20),
+                            line=dict(color='rgb(220,220,220)',
+                                        width=1)),
                 name='Random Portfolio'
         )
         try:
+            user_data = user_data.astype(float)
+
+            user_text = ['Portfolio: Created' + '<br>' +
+                        'Return: ' + str(round(100 * user_data.loc[0, 'Portfolio Return'], 4)) + '%<br>' +
+                        'Sigma: ' + str(round(100 * user_data.loc[0, 'Portfolio Deviation'], 4)) + '%<br>' +
+                        'Sharpe Ratio: ' + str(round(user_data.loc[0, 'Sharpe Ratio'], 4)) + '<br>' +
+                        'AAPL Weight: ' + str(round(100 * user_data.loc[0, 'AAPL Weight'], 4)) + '%<br>' +
+                        'AMZN Weight: ' + str(round(100 * user_data.loc[0, 'AMZN Weight'], 4)) + '%<br>' +
+                        'FB Weight: ' + str(round(100 * user_data.loc[0, 'FB Weight'], 4)) + '%<br>' +
+                        'GOOGL Weight: ' + str(round(100 * user_data.loc[0, 'GOOGL Weight'], 4)) + '%<br>' +
+                        'MSFT Weight: ' + str(round(100 * user_data.loc[0, 'MSFT Weight'], 4)) + '%<br>' +
+                        'TSLA Weight: ' + str(round(100 * user_data.loc[0, 'TSLA Weight'], 4)) + '%<br>'
+                        'UAA Weight: ' + str(round(100 * user_data.loc[0, 'UAA Weight'], 4)) + '%'
+                        ]
+
             user_plot = go.Scatter(
                 x=user_data['Portfolio Deviation'],
                 y=user_data['Portfolio Return'],
                 mode='markers',
-                hoverinfo='x+y',
+                text=user_text,
+                hoverinfo='text',
                 marker=dict(color='#accecd',
-                            size=14,
+                            size=12,
                             line=dict(color='rgb(0, 0, 0)',
                                         width=2)),
                 name='User Portfolio'
@@ -386,6 +475,7 @@ class Build_graph():
             end_data = [rand_plot, user_plot]
         except:
             end_data = [rand_plot]
+
         layout = go.Layout(
                 title = 'Portfolio Graph',
                 yaxis = go.layout.YAxis(
@@ -406,6 +496,7 @@ class Build_graph():
                     ticks='outside',
                     showline=True,
                 ),
+                hovermode='closest',
                 showlegend = True,
                 legend = dict(orientation='v'),
         )
