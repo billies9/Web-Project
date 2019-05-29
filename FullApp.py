@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, url_for, redirect
 
 app = Flask(__name__)
 
-from graph import Build_graph, Security_Portfolio_data
+from static.py.graph import Build_graph, Security_Portfolio_data
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
@@ -110,7 +110,11 @@ class Security():
     def build_portfolio(self):
         if request.method == 'POST':
             dates = self.build_range_dates()
-            weights = { ticker:weight for ticker, weight in request.form.to_dict().items() if ticker not in ['date1', 'date2', 'Get_Weights'] }
+            weights = { ticker:weight for ticker, weight in request.form.to_dict().items() if ticker not in ['date1', 'date2', 'Get_Weights', 'num_portfolios'] }
+            try:
+                num_portfolios = int(request.form['num_portfolios'])
+            except:
+                num_portfolios = 200
             if dates[0] is True:
                 return render_template('portfolio/create.html',
                                         title='Create / View portfolio',
@@ -118,11 +122,24 @@ class Security():
                                         error_msg=dates[1],
                                         stocks=self.ord_mapping)
             elif dates[0] != None and weights != None:
-                script1 = Build_graph('', dates).portfolio_graph(weights)
-                return render_template('portfolio/create.html',
-                                        title='Create / View portfolio',
-                                        graph=script1,
-                                        stocks=self.ord_mapping)
+
+                script1, data_dict = Build_graph('', dates).portfolio_graph(weights, num_portfolios)
+                try:
+                    user_port = data_dict['user_port']
+                    rand_ports = data_dict['rand_ports']
+                    return render_template('portfolio/create.html',
+                                            title='Create / View portfolio',
+                                            graph=script1,
+                                            rand_data=rand_ports,
+                                            user_data=user_port,
+                                            stocks=self.ord_mapping)
+                except:
+                    rand_ports = data_dict['rand_ports']
+                    return render_template('portfolio/create.html',
+                                            title='Create / View portfolio',
+                                            graph=script1,
+                                            rand_data=rand_ports,
+                                            stocks=self.ord_mapping)
             else:
                 pass
         return render_template('portfolio/create.html',
@@ -231,7 +248,7 @@ def TSLA(ticker = 'TSLA'):
     return Security(ticker).build_security()
 
 @app.route('/portfolio/create', methods=['GET', 'POST'])
-def create_portoflio():
+def create_portfolio():
     return Security('').build_portfolio()
 
 if __name__ == '__main__':
