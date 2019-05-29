@@ -4,11 +4,30 @@
 <!-- Need to rework this page like the other securities -->
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/base_style.css') }}"/>
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/port_style.css') }}" />
+  <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+  <!-- Interactive Datatables  -->
+  <!-- <script src="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"></script> -->
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src='https://cdn.datatables.net/buttons/1.5.6/js/dataTables.buttons.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js'></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js'></script>
+  <script src='https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js'></script>
+  <script src='https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js'></script>
+  <script>
+    $(document).ready( function () {
+        $('#rand_ports_table').DataTable({
+          dom:'Bfrtip',
+          buttons: ['copy', 'csv', 'excel', 'pdf', 'print']
+        });
+    } );
+  </script>
 {% endblock %}
 
 {% block construct %}
@@ -56,9 +75,21 @@
     <div class='row weights-title'>
       <h2>Give weights to securities:</h2>
     </div>
+    <!-- <form method='POST'>
+      <div class='form-row'>
+        <input type='text' name='num_portfolios' />
+      </div>
+    </form> -->
     <form method='POST'>
+      <div class='form-row'>
+        <div class='input-group'>
+          <label for='num_portfolios'>Number of Random Portfolios:</label>
+          <input type='text' name='num_portfolios' placeholder='ex. 200'/>
+        </div>
+      </div>
       <div class='form-row date-row'>
         <div class="input-group">
+
           <input type="date" class="form-control" name='date1' placeholder="04/01/2019"/>
           <div class='input-group-addon block-all-corners'>
             <span class="input-group-text">-</span>
@@ -96,6 +127,65 @@
         {% endif %}
       {% endfor %}
     </form>
+  </div>
+</div>
+<div class='row statistics'>
+  <!-- Will put statistics on the portfolios here -->
+  <!-- Large, dropwdown table will show all weights, the return, the deviation, sharpe ratio, etc.  -->
+  <div id='accordion' class='col-12'>
+    <div class='card'>
+      <div class='card-header' id='statisticsHeading'>
+        <button class='btn btn-link' data-toggle='collapse' data-target='#statistics' aria-expanded='true' aria-controls='statisticsHeading'>
+          <h4 class='mb-0'>Portfolio Statistics</h4>
+        </button>
+      </div>
+      <div id='statistics' class='collapse show' aria-labelledby='statisticsHeading' data-parent='#accordion'>
+        <div class='card-body'>
+          {% if user_data %}
+          <!-- Write in user_data -->
+            <div>
+              <h5>User Created Portfolio</h5>
+              {{ table_data['user_port'] }}
+            </div>
+          {% endif %}
+          <!-- Always write in rand_data -->
+          {% if rand_data is defined %}
+            <div>
+              <h5>Randomly Generated Portfolios</h5>
+
+              <table id='rand_ports_table' class='display dataTable'>
+                <thead>
+                  <tr>
+                    <th class='sorting_asc'>
+                      Portfolio Number
+                    </th>
+                    {% for column in rand_data.columns %}
+                      <th class='sorting'>
+                        {{ column }}
+                      </th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for idx, data in rand_data.iterrows() %}
+                    <tr>
+                      <td>
+                        {{ idx + 1 }}
+                      </td>
+                      {% for column in rand_data.columns %}
+                        <td>
+                          {{ rand_data.loc[idx, column] }}
+                        </td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 <div id='footnotes' class='row'>
