@@ -39,3 +39,7 @@
 .port-second-level-list {
   padding-left: 25px;
 }
+table.dataTable thead th {
+  padding: 10px 15px;
+  border-bottom: 1px solid black;
+}
