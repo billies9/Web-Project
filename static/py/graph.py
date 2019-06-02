@@ -75,8 +75,9 @@ class Security_Portfolio_data():
         data = json.loads(r.text)
         df = pd.DataFrame(data)
         df.set_index('Ticker', inplace = True)
-        TickerName = df.loc[df.index[df.index == self.ticker], 'companyName'].tolist()[0]
-        CompanyName = TickerName.split(' ')[0] # Find a way to target full name outside of Inc. / Corp. / etc.
+        CompanyName = df.loc[df.index[df.index == self.ticker.upper()], 'companyName'].tolist()[0]
+        if 'Class' in CompanyName or 'S.A.':
+            CompanyName = CompanyName.split('Class')[0]# CompanyName = TickerName#.split(' ')[0] # Find a way to target full name outside of Inc. / Corp. / etc.
         return CompanyName
 
     # def portfolio_close_returns(self, weights = None):
@@ -169,6 +170,7 @@ class Security_Portfolio_data():
         betas = []
         alphas = []
         r_squared = []
+        VaRs = []
 
         # set the number of combinations for imaginary portfolios
         selected = list(built_frame.columns)
@@ -183,9 +185,9 @@ class Security_Portfolio_data():
             weights /= np.sum(weights)
             returns = np.dot(weights, returns_annual)
             volatility = np.sqrt(np.dot(weights.T, np.dot(cov_annual, weights)))
-            # print(stats_init.regression_stats(weights))
-            # beta, alpha, r_2 = Portfolio_Stats(returns_daily_copy, (self.parse_date_content('SPY')['close'] * 10).pct_change(), weights).regression_stats()
+
             beta, alpha, r_2 = stats_init.regression_stats(weights)
+            VaR = stats_init.VaR(weights) # 90%, 95%, 97.5%, 99% levels
 
             port_returns.append(returns)
             port_volatility.append(volatility)
@@ -194,13 +196,15 @@ class Security_Portfolio_data():
             betas.append(beta)
             alphas.append(alpha)
             r_squared.append(r_2)
+            VaRs.append(VaR)
 
         portfolio = {'Portfolio Return': port_returns,
              'Portfolio Deviation': port_volatility,
              'Sharpe Ratio': sharpe_ratio,
              'Beta': betas,
              'Alpha': alphas,
-             'R^2': r_squared}
+             'R^2': r_squared,
+             'VaR': VaRs}
 
         # extend original dictionary to accomodate each ticker and weight in the portfolio
         for counter, symbol in enumerate(selected):
@@ -209,22 +213,25 @@ class Security_Portfolio_data():
         # make a nice dataframe of the extended dictionary
         df = pd.DataFrame(portfolio)
 
+        df[['90% Confidence Level VaR', '95% Confidence Level VaR', '97.5% Confidence Level VaR', '99% Confidence Level VaR']] = pd.DataFrame(df.VaR.values.tolist(), index=df.index)
+        df.drop('VaR', axis=1, inplace=True)
         # get better labels for desired arrangement of columns
-        column_order = ['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio', 'Beta', 'Alpha', 'R^2'] + [stock+' Weight' for stock in selected]
+        column_order = (['Portfolio Return', 'Portfolio Deviation', 'Sharpe Ratio', 'Beta', 'Alpha', 'R^2', '90% Confidence Level VaR',
+                            '95% Confidence Level VaR', '97.5% Confidence Level VaR', '99% Confidence Level VaR',] + [stock + ' Weight' for stock in selected])
 
         # reorder dataframe columns
         df = df[column_order]
 
-
         # Rounds / Formats data for placement in hovertext annotations / Portfolio statistics
         for x in range(len(df)):
             for column in df:
-                if column not in ('Sharpe Ratio', 'Beta', 'Alpha'):
-                    df.loc[x, column] = str(round(100 * df.loc[x, column], 4)) + '%'
+                if 'VaR' not in column:
+                    if column not in ('Sharpe Ratio', 'Beta', 'Alpha'):
+                        df.loc[x, column] = str(round(100 * df.loc[x, column], 4)) + '%'
+                    else:
+                        df.loc[x, column] = str(round(df.loc[x, column], 4))
                 else:
-                    df.loc[x, column] = str(round(df.loc[x, column], 4))
-
-
+                    df.loc[x, column] = '$' + str(round(df.loc[x, column], 2))
         return df
 
     def get_company_info(self):
@@ -251,6 +258,16 @@ class Security_Portfolio_data():
             lst.append('-')
         lst.pop(-1)
         rel_frame.loc['Range'] = ' '.join(lst)
+
+        # Define Market Cap size for size premium
+        # cap =float((rel_frame.loc['Market Capitalization', 0]).split('$')[1])
+        # print(cap)
+        # if cap >= 10e9:
+        #     rel_frame.loc['Size Premium'] = 'Large-Cap'
+        # elif cap <= 10e9 and cap >= 2e9:
+        #     rel_frame.loc['Size Premium'] = 'Mid-Cap'
+        # else:
+        #     rel_frame.loc['Size Premium'] = 'Small-Cap'
         return rel_frame
 
     def get_financial_ratios(self):
