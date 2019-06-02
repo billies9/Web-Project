@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block AAPL_head %}
-  <title>Apple Inc.</title>
+  <title>{{title}}</title>
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
   <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 
@@ -13,7 +13,7 @@
 
 <!-- Pre-packaged inside row using base.html inheritance -->
 {% block AAPL_header %}
-  <h1>Apple Inc.</h1>
+  <h1>{{title}}</h1>
 {% endblock %}
 
 <!-- Pre-packaged inside row using base.html inheritance -->
@@ -56,15 +56,17 @@
         <p id='attribution'>Powered by <a href='https://newsapi.org/'>NewsApi.org</a></p>
       </div>
       <ul class='list-unstyled row articles'>
-        {% for row, article in articles.iterrows() %}
-          <li class='list-item border-top border-bottom border-right col-lg-6 article'>
-            <div class='article-img-container'>
-              <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Article Image'/></a>
-            </div>
-            <p class='title'><a href='{{ article["url"] }}' class='title-link'>{{ article['title'] }}</a></p>
-            <p id='description'>{{ article['description'] }}</p>
-          </li>
-        {% endfor %}
+        {% if articles is not none %}
+          {% for row, article in articles.iterrows() %}
+            <li class='list-item border-top border-bottom border-right col-lg-6 article'>
+              <div class='article-img-container'>
+                <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Article Image'/></a>
+              </div>
+              <p class='title'><a href='{{ article["url"] }}' class='title-link'>{{ article['title'] }}</a></p>
+              <p id='description'>{{ article['description'] }}</p>
+            </li>
+          {% endfor %}
+        {% endif %}
       </ul>
     </aside>
     <aside class='col-lg-4 col-md-6'>

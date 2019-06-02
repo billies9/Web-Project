@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block AMZN_head %}
-  <title>Amazon.com Inc.</title>
+  <title>{{title}}</title>
   <link href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
   <link href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
@@ -19,7 +19,7 @@
 {% endblock %}
 
 {% block AMZN_header %}
-  <h1>Amazon.com Inc.</h1>
+  <h1>{{title}}</h1>
 {% endblock %}
 
 {% block AMZN %}

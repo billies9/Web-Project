@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block UAA_head %}
-  <title>Under Armour Inc.</title>
+  <title>{{title}}</title>
   <link href="https://cdn.pydata.org/bokeh/release/bokeh-1.0.4.min.css" rel="stylesheet" type="text/css">
   <link href="https://cdn.pydata.org/bokeh/release/bokeh-widgets-1.0.4.min.css" rel="stylesheet" type="text/css">
   <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
@@ -20,7 +20,7 @@
 {% endblock %}
 
 {% block UAA_header %}
-  <h1>Under Armour Inc.</h1>
+  <h1>{{title}}</h1>
 {% endblock %}
 
 {% block UAA %}
@@ -61,6 +61,7 @@
       <p id='attribution'>Powered by <a href='https://newsapi.org/'>NewsApi.org</a></p>
     </div>
     <ul class='list-unstyled row articles'>
+
       {% for row, article in articles.iterrows() %}
         <li class='list-item border-top border-bottom border-right col-lg-6 article'>
           <div class='article-img-container'>
