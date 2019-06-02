@@ -20,95 +20,101 @@
     {% block UAA_head %}{% endblock %}
     {% block AAPL_head %}{% endblock %}
     {% block AMZN_head %}{% endblock %}
+    {% block General_head %}{% endblock %}
     {% block construct_head %}{% endblock %}
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
+
+    <!-- Allows for Bootstrap dropdown menu to function -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-  </head>
-  <body class='container' id='container'>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <!-- Toggles icon for collapses navbar -->
-      <button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='nav-content' aria-expanded='false' aria-label='Toggle Navigation'>
-        <span class='navbar-toggler-icon'></span>
-      </button>
 
-      <!-- Complete navbar -->
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for( 'index' ) }}" title='Visit HomePage'>Home <span class="sr-only">(current)</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for( 'create_portfolio' ) }}" title='Create, view, or save a portfolio'>Portfolio Construction</a>
-          </li>
-          <!-- Page Does not currently exist -->
-          <!-- <li class="nav-item">
-            <a class="nav-link" href="#" title='Compare price movements'>Price Comparison</a>
-          </li> -->
-          <!--                               -->
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-              Select Page
-            </a>
-            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-              <h6 class='dropdown-header'>Indices</h6>
-              {% for name, ticker in stocks.items() %}
-                {% if name == 'S&P 500 Index' or name == 'Dow Jones Industrial Average': %}
-                  <a class='dropdown-item disabled' href="{{ url_for( ticker ) }}" title='Visit {{ ticker }} page'>{{ name }}</a>
-                {% endif %}
-              {% endfor %}
+    </head>
+      <body class='container' id='container'>
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+          <!-- Toggles icon for collapses navbar -->
+          <button class='navbar-toggler' type='button' data-toggle='collapse' data-target='#navbarSupportedContent' aria-controls='nav-content' aria-expanded='false' aria-label='Toggle Navigation'>
+            <span class='navbar-toggler-icon'></span>
+          </button>
 
-              <h6 class='dropdown-header'>Securities</h6>
-              {% for name, ticker in stocks.items() %}
-                {% if name != 'S&P 500 Index' and name != 'Dow Jones Industrial Average': %}
-                  <a class='dropdown-item' href="{{ url_for( ticker ) }}" title='Visit {{ ticker }} page'>{{ name }}</a>
-                {% endif %}
-              {% endfor %}
+          <!-- Complete navbar -->
+          <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav mr-auto">
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for( 'index' ) }}" title='Visit HomePage'>Home <span class="sr-only">(current)</span></a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for( 'create_portfolio' ) }}" title='Create, view, or save a portfolio'>Portfolio Construction</a>
+              </li>
+              <!-- Page Does not currently exist -->
+              <!-- <li class="nav-item">
+                <a class="nav-link" href="#" title='Compare price movements'>Price Comparison</a>
+              </li> -->
+              <!--                               -->
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Select Page
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                  <h6 class='dropdown-header'>Indices</h6>
+                  {% for name, ticker in stocks.items() %}
+                    {% if name == 'S&P 500 Index' or name == 'Dow Jones Industrial Average': %}
+                      <a class='dropdown-item disabled' href="{{ url_for( ticker ) }}" title='Visit {{ ticker }} page'>{{ name }}</a>
+                    {% endif %}
+                  {% endfor %}
+
+                  <h6 class='dropdown-header'>Securities</h6>
+                  {% for name, ticker in stocks.items() %}
+                    {% if name != 'S&P 500 Index' and name != 'Dow Jones Industrial Average': %}
+                      <a class='dropdown-item' href="{{ url_for( ticker ) }}" title='Visit {{ ticker }} page'>{{ name }}</a>
+                    {% endif %}
+                  {% endfor %}
+                </div>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        {% if title != 'HomePage' %}
+          <header class='row'>
+            <div class='col-lg-12 col-md-12 col-sm-12 header'>
+              <!-- {% block index_header %}{% endblock %} -->
+              {% block SPX_header %}{% endblock %}
+              {% block DJIA_header %}{% endblock %}
+              {% block GOOGL_header %}{% endblock %}
+              {% block TSLA_header %}{% endblock %}
+              {% block MSFT_header %}{% endblock %}
+              {% block FB_header %}{% endblock %}
+              {% block UAA_header %}{% endblock %}
+              {% block AAPL_header %}{% endblock %}
+              {% block AMZN_header %}{% endblock %}
+              {% block General_header %}{% endblock %}
             </div>
-          </li>
-        </ul>
-      </div>
-    </nav>
-    {% if title != 'HomePage' %}
-      <header class='row'>
-        <div class='col-lg-12 col-md-12 col-sm-12 header'>
-          <!-- {% block index_header %}{% endblock %} -->
-          {% block SPX_header %}{% endblock %}
-          {% block DJIA_header %}{% endblock %}
-          {% block GOOGL_header %}{% endblock %}
-          {% block TSLA_header %}{% endblock %}
-          {% block MSFT_header %}{% endblock %}
-          {% block FB_header %}{% endblock %}
-          {% block UAA_header %}{% endblock %}
-          {% block AAPL_header %}{% endblock %}
-          {% block AMZN_header %}{% endblock %}
-        </div>
-      </header>
-    {% endif %}
-    <main class='row'>
-      <div class='col-lg-12 col-md-12 col-sm-12 main'>
-        {% block content %}{%endblock%}
-        {% block SPX %}{% endblock %}
-        {% block DJIA %}{% endblock %}
-        {% block FB %}{% endblock %}
-        {% block TSLA %}{% endblock %}
-        {% block MSFT %}{% endblock %}
-        {% block AMZN %}{% endblock %}
-        {% block AAPL %}{% endblock %}
-        {% block GOOGL %}{% endblock %}
-        {% block UAA %}{% endblock %}
-        {% block construct %}{% endblock %}
-      </div>
-    </main>
-    <footer class='row'>
-      <div class='col-lg-12 col-md-12 col-sm-12 footer'>
-        &copy; Copyright Brendan Illies
-      </div>
-    </footer>
-    <!-- jQuery--this must come first! -->
-    <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script> -->
-    <!-- popper.js--a library of drop-down and pop-up JavaScript scripts -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script>
+          </header>
+        {% endif %}
+        <main class='row'>
+          <div class='col-lg-12 col-md-12 col-sm-12 main'>
+            {% block content %}{%endblock%}
+            {% block SPX %}{% endblock %}
+            {% block DJIA %}{% endblock %}
+            {% block FB %}{% endblock %}
+            {% block TSLA %}{% endblock %}
+            {% block MSFT %}{% endblock %}
+            {% block AMZN %}{% endblock %}
+            {% block AAPL %}{% endblock %}
+            {% block GOOGL %}{% endblock %}
+            {% block UAA %}{% endblock %}
+            {% block General %}{% endblock %}
+            {% block construct %}{% endblock %}
+          </div>
+        </main>
+        <footer class='row'>
+          <div class='col-lg-12 col-md-12 col-sm-12 footer'>
+            &copy; Copyright Brendan Illies
+          </div>
+        </footer>
+        <!-- jQuery--this must come first! -->
+        <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+        <!-- popper.js--a library of drop-down and pop-up JavaScript scripts --> -->
+        <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script> -->
 
-  </body>
+      </body>
 </html>
