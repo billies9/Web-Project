@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 import requests
 import pandas as pd
 from newsapi import NewsApiClient
+# from templates.securities.Security_Template2 import Security_Template
 
 mapping = {"Microsoft": "MSFT",
            "Amazon": "AMZN",
@@ -31,7 +32,7 @@ def index():
 
 class Security():
     def __init__(self, ticker):
-        self.ticker = ticker
+        self.ticker = ticker.upper()
         self.news_api_key = '47c36eeeae194d00831b85ae1b7efaba'
         self.ord_mapping = {key:val for key, val in sorted(mapping.items())}
 
@@ -41,13 +42,18 @@ class Security():
         script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
         script2 = Build_graph(self.ticker, (dates, 'hist')).regression_graph()
 
-        articles = self.Articles(self.news_api_key)
+        articles, match_val = self.Articles(self.news_api_key)
+        
+        if self.ticker in mapping.keys():
+            template = 'securities/' + self.ticker + '.html'
+        else:
+            template = 'securities/Security_Template.html'
 
         if request.method == 'POST':
             dates = self.build_range_dates()
             if dates[0] is True:
-                return render_template('securities/' + self.ticker + '.html',
-                                        title=self.ticker,
+                return render_template(template_name_or_list=template,
+                                        title=match_val,
                                         price=script1,
                                         regress=script2,
                                         articles=articles,
@@ -57,8 +63,8 @@ class Security():
                                         company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
                                         financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
             elif dates[0] == None:
-                return render_template('securities/' + self.ticker + '.html',
-                                        title=self.ticker,
+                return render_template(template_name_or_list=template,
+                                        title=match_val,
                                         price=script1,
                                         regress=script2,
                                         articles=articles,
@@ -68,14 +74,46 @@ class Security():
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
                 script2 = Build_graph(self.ticker, dates).regression_graph()
-        return render_template('securities/' + self.ticker + '.html',
-                                title=self.ticker,
+        return render_template(template_name_or_list=template,
+                                title=match_val,
                                 price=script1,
                                 regress=script2,
                                 articles=articles,
                                 stocks=self.ord_mapping,
                                 company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
                                 financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
+
+    # def build_security_general(self):
+    #     dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
+    #
+    #     script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
+    #     script2 = Build_graph(self.ticker, (dates, 'hist')).regression_graph()
+    #
+    #     articles = self.Articles(self.news_api_key)
+    #      # <script> $(document).ready(function() {
+    #      #       plot($$(price), 'price')
+    #      #       });
+    #      # </script>
+    #      # <script> $(document).ready(function() {
+    #      #       plot($$(regress), 'regression')
+    #      #       });
+    #      # </script>
+    #     # print(Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
+    #     return render_template('securities/Security_Template2.html',
+    #                             title=self.ticker,
+    #                             price=script1,
+    #                             regress=script2,
+    #                             articles=articles,
+    #                             stocks=self.ord_mapping,
+    #                             company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
+    #                             financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
+    #     # return Security_Template.substitute(title=self.ticker,
+    #     #                                     # price=script1,
+    #     #                                     # regress=script2,
+    #     #                                     articles=articles,
+    #     #                                     stocks=self.ord_mapping,
+    #     #                                     company_info=Security_Portfolio_data(self.ticker, ('', '')).get_company_info(),
+    #     #                                     financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
 
     def build_index(self):
         # Get Sector performances here for SPX, etc.
@@ -203,8 +241,8 @@ class Security():
                                             )
         frame = pd.DataFrame(all_articles['articles'])
         if frame.empty:
-            return None
-        return frame[['title', 'description', 'url', 'urlToImage']]
+            return None, match_val
+        return frame[['title', 'description', 'url', 'urlToImage']], match_val
 
 
 @app.route('/indices/SPX', methods = ['GET', 'POST'])
@@ -214,10 +252,10 @@ def SPX(ticker = 'SPX'):
 @app.route('/indices/DJIA', methods = ['GET', 'POST'])
 def DJIA(ticker = 'DJIA'):
     return Security(ticker).build_index()
-#
-# @app.route('/securities/<some_ticker>', methods = ['GET', 'POST'])
-# def security_page(some_ticker):
-#     return Security(some_ticker).build_security_general()
+
+@app.route('/securities/<some_ticker>', methods = ['GET', 'POST'])
+def security_page(some_ticker):
+    return Security(some_ticker).build_security()
 
 @app.route('/securities/FB', methods = ['GET', 'POST'])
 def FB(ticker = 'FB'):
