@@ -1,0 +1,135 @@
+<!-- # from string import Template
+# Security_Template = Template(""" -->
+
+{% extends "base.html" %}
+
+{% block General_head %}
+  <title>{{title}}</title>
+  <link rel='stylesheet' href="{{ url_for('static', filename='styles/securities_style.css') }}"/>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+<!-- Pre-packaged inside row using base.html inheritance -->
+{% block General_header %}
+  <h1>{{title}}</h1>
+{% endblock %}
+
+<!-- Pre-packaged inside row using base.html inheritance -->
+{% block General %}
+<!-- Within the main content section, 3 distinct rows (articles/info, graphs, date selectors) -->
+  <div class='row dates'>
+    <form method='POST' class="form-inline col-lg-12">
+      <div class="input-group">
+        <input type="date" class="form-control" name='date1' placeholder="04/01/2019"/>
+        <div class='input-group-addon block-all-corners'>
+          <span class="input-group-text">-</span>
+        </div>
+        <input type="date" class="form-control" name='date2' placeholder="04/12/2019"/>
+      </div>
+      <button type="submit" class="btn btn-primary ml-3">Submit</button>
+    </form>
+  </div>
+  <div class='row graphs'>
+    <div class='col-lg-6 price' id='price'>
+      <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
+      <script> $(document).ready(function() {
+                 plot({{ price|safe }}, 'price')
+                 });
+      </script>
+    </div>
+
+    <div class='col-lg-6 regression' id='regression'>
+      <script type='text/javascript' src="{{ url_for('static', filename='js/plot.js') }}"></script>
+      <script> $(document).ready(function() {
+                 plot({{ regress|safe }}, 'regression')
+                 });
+      </script>
+    </div>
+  </div>
+
+  <section id='info' class='row info'>
+    <aside class='col-lg-8 col-md-6 articles'>
+      <div class='row' id='head'>
+        <h3 id='head-title'>Articles of Interest:</h3>
+        <p id='attribution'>Powered by <a href='https://newsapi.org/'>NewsApi.org</a></p>
+      </div>
+      <ul class='list-unstyled row articles'>
+        {% if articles is not none %}
+          {% for row, article in articles.iterrows() %}
+            <li class='list-item border-top border-bottom border-right col-lg-6 article'>
+              <div class='article-img-container'>
+                <a class='picture-link' href='{{ article["url"] }}'><img class='picture' src='{{ article["urlToImage"] }}' alt='Article Image'/></a>
+              </div>
+              <p class='title'><a href='{{ article["url"] }}' class='title-link'>{{ article['title'] }}</a></p>
+              <p id='description'>{{ article['description'] }}</p>
+            </li>
+          {% endfor %}
+        {% endif %}
+      </ul>
+    </aside>
+    <aside class='col-lg-4 col-md-6'>
+      <div class='row' id='head'>
+        <h3 id='head-title'>Stock Info.</h3>
+      </div>
+      <div id="accordion">
+        <div class="card">
+          <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+              <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                <h4>Company Information</h4>
+              </button>
+            </h5>
+          </div>
+          <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+            <div class="card-body">
+              <ul class='list-unstyled row'>
+                {% for row, info in company_info.iterrows() %}
+                  <li class='list-item border-bottom col-12'>
+                    <h5 class='company measurelabel head'>{{ row }}</h5>
+                    <p class='company measurevalue'>{{ info[0] }} </p>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" id="headingTwo">
+            <h5 class="mb-0">
+              <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                <h4>Financial Information</h4>
+              </button>
+            </h5>
+          </div>
+          <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+            <div class="card-body">
+              <ul class='list-unstyled row'>
+                {% for head, ratio_group in financial_info.items() %}
+                  <li class='list-item border-bottom col-12 '>
+                    <h5>{{ head }}</h5>
+                  </li>
+                  <li class='list-item col-12'>
+                    <ul class='list-unstyled keep-indent'>
+                      {% for measure, ratio in ratio_group.items() %}
+                        <li class='list-item col-12 row contain'>
+                          <span class='financial measurelabel'>{{ measure }}</span>
+                          <span class='financial measurevalue'>{{ ratio }}</span>
+                        </li>
+                      {% endfor %}
+                    </ul>
+                  </li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </section>
+{% endblock %}
+<!-- # """) -->
