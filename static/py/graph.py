@@ -11,6 +11,7 @@ import plotly
 import plotly.plotly as py
 import plotly.graph_objs as go
 import scipy.stats as stats
+# from static.db.init_db import init_db
 
 mapping = {"Microsoft Corp.": "MSFT",
            "Amazon.com Inc.": "AMZN",
@@ -62,7 +63,7 @@ class Security_Portfolio_data():
         if ticker != None:
             self.ticker = ticker
         df = self.load_content()
-        todays_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        # todays_date = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
         # if (df.index[-1] != todays_date - timedelta(1)) and df.index[-1] != (todays_date - timedelta(2)):
         #     print('not this weekend')
 
@@ -74,31 +75,14 @@ class Security_Portfolio_data():
         r = requests.get('https://financialmodelingprep.com/api/stock/list/all?datatype=json')
         data = json.loads(r.text)
         df = pd.DataFrame(data)
+        # df['Price'] = df['Price'] + 1000
+        # init_db().add_data('tblSecurities', df.copy())
+
         df.set_index('Ticker', inplace = True)
         CompanyName = df.loc[df.index[df.index == self.ticker.upper()], 'companyName'].tolist()[0]
         if 'Class' in CompanyName or 'S.A.':
             CompanyName = CompanyName.split('Class')[0]# CompanyName = TickerName#.split(' ')[0] # Find a way to target full name outside of Inc. / Corp. / etc.
         return CompanyName
-
-    # def portfolio_close_returns(self, weights = None):
-    #     if weights == None:
-    #         print('error - no weights given')
-    #     dfclose = pd.DataFrame(columns = [ticker + ' close' for ticker in weights.keys() if weights[ticker] != ''])
-    #     dfreturns = pd.DataFrame({ticker + ' Weighted Return':[0] for ticker in weights.keys() if weights[ticker] != ''})
-    #     i = 0
-    #     for column in dfclose.columns:
-    #         ticker = column.split(' ')[0]
-    #         frame = self.parse_date_content(ticker)
-    #         dfclose[ticker + ' close'] = frame['close']
-    #         dfclose[ticker + ' returns'] = frame['close'].pct_change() * 100 # for covariance matrix calcs
-    #         try:
-    #             _ = (dfclose.loc[self.dates[1], ticker + ' close'] - dfclose.loc[self.dates[0], ticker + ' close']) / dfclose.loc[self.dates[0], ticker + ' close']
-    #             dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker]) # Weighted
-    #         except:
-    #             self.dates[1] = pd.to_datetime(self.dates[1])-timedelta(1)
-    #             _ = (dfclose.loc[self.dates[1], ticker + ' close'] - dfclose.loc[self.dates[0], ticker + ' close']) / dfclose.loc[self.dates[0], ticker + ' close']
-    #             dfreturns.loc[0, ticker + ' Weighted Return'] = _ * float(weights[ticker]) # Weighted
-    #     return dfclose, dfreturns
 
     def portfolio_rand_user_weights(self, weights):
         # Defines random selection of securities and weights for use when selection or weight defined by user
@@ -259,15 +243,6 @@ class Security_Portfolio_data():
         lst.pop(-1)
         rel_frame.loc['Range'] = ' '.join(lst)
 
-        # Define Market Cap size for size premium
-        # cap =float((rel_frame.loc['Market Capitalization', 0]).split('$')[1])
-        # print(cap)
-        # if cap >= 10e9:
-        #     rel_frame.loc['Size Premium'] = 'Large-Cap'
-        # elif cap <= 10e9 and cap >= 2e9:
-        #     rel_frame.loc['Size Premium'] = 'Mid-Cap'
-        # else:
-        #     rel_frame.loc['Size Premium'] = 'Small-Cap'
         return rel_frame
 
     def get_financial_ratios(self):
