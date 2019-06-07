@@ -71,6 +71,14 @@
                 </div>
               </li>
             </ul>
+            <form class="form-inline my-2 my-lg-0">
+              {{ form.csrf_token }}
+              <!-- <input class="form-control mr-sm-2" type="text" placeholder="Search" aria-label="Search"> -->
+              <div class='form-group'>
+                {{ form.ticker(class='form-control')}}
+              </div>
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
           </div>
         </nav>
         {% if title != 'HomePage' %}
@@ -113,7 +121,7 @@
         </footer>
         <!-- jQuery--this must come first! -->
         <!-- <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-        <!-- popper.js--a library of drop-down and pop-up JavaScript scripts --> -->
+        <!-- popper.js--a library of drop-down and pop-up JavaScript scripts -->
         <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js" integrity="sha384-cs/chFZiN24E4KMATLdqdvsezGxaGsi4hLGOzlXwp5UZB1LY//20VyM2taTB4QvJ" crossorigin="anonymous"></script> -->
 
       </body>
