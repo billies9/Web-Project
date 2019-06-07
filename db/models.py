@@ -3,11 +3,12 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
-# import requests
-# import pandas as pd
-# import json
-# from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
+import requests
+import pandas as pd
+import json
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+# import flaskdb
 
 # db = SQLAlchemy()
 metadata = MetaData()
@@ -20,9 +21,9 @@ class Securities(Base):
     # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     Ticker = Column(String(6), primary_key=True)
     companyName = Column(String(100), nullable=True)
-    Price = Column(Float)
+    Price = Column(Float())
 
-# db.create_all()
+# flaskdb.db.create_all()
 
 # Scripts for updating / parsing database tables
 def session_builder(engine, function_outputs):
@@ -54,8 +55,9 @@ def update_tblSecurities():
 
     frame_realtimePrice.rename(index=str, columns={'symbol':'Ticker'}, inplace=True)
 
-    merged_frame = pd.merge(frame_companyName, frame_realtimePrice, on='Ticker', how='outer')
+    merged_frame = pd.merge(frame_companyName, frame_realtimePrice, on='Ticker', how='inner')
     merged_frame.drop('Price', axis=1, inplace=True)
+    merged_frame.rename(index=str, columns={'price':'Price'}, inplace=True)
 
     session_builder(engine, (Securities, merged_frame.to_dict(orient='records')))
     return
