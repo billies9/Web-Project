@@ -260,9 +260,11 @@ def create_app():
     def index():
         title = 'HomePage'
         ord_mapping = {key:val for key, val in sorted(mapping.items())}
+        form = MyForm()
         return render_template('index.html',
-        title=title,
-        stocks=ord_mapping)
+                                title=title,
+                                stocks=ord_mapping,
+                                form=form)
 
     @app.route('/indices/SPX', methods = ['GET', 'POST'])
     def SPX(ticker = 'SPX'):
