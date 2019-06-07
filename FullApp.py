@@ -251,7 +251,10 @@ def create_app():
     app.config['SECRET_KEY'] = 'first_time_for_everything'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/SecuritiesIndexDB.db'
     # engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
-    db.init_app(app)
+    from db.models import Securities
+    with app.test_request_context():
+        db.init_app(app)
+        db.create_all()
 
     @app.route('/')
     @app.route('/index')
