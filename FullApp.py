@@ -1,13 +1,31 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, jsonify
 
-app = Flask(__name__)
 
 from static.py.graph import Build_graph, Security_Portfolio_data
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
 from newsapi import NewsApiClient
-# from templates.securities.Security_Template2 import Security_Template
+
+from flask_wtf import FlaskForm
+from wtforms import StringField
+from wtforms.validators import DataRequired, Length
+from flask_sqlalchemy import SQLAlchemy
+# from static.db.models import *
+from sqlalchemy import create_engine
+from db.flaskdb import db
+# from sqlalchemy.orm import sessionmaker
+
+# db.app = app
+# db = SQLAlchemy(app)
+
+class MyForm(FlaskForm):
+    ticker = StringField('Ticker', validators=[DataRequired(), Length(max=6)], render_kw={'placeholder':'ticker'})
+
+# from static.db.models import Securities
+# with app.test_request_context():
+#     db.init_app(app)
+#     db.create_all()
 
 mapping = {"Microsoft": "MSFT",
            "Amazon": "AMZN",
@@ -19,16 +37,6 @@ mapping = {"Microsoft": "MSFT",
            "S&P 500 Index": "SPX",
            "Dow Jones Industrial Average": "DJIA"}
 
-@app.route('/')
-@app.route('/index')
-# Creates association between URL given as argument and function
-# Assigning two of them, Flask requests either of two URLs and returns value of function
-def index():
-    title = 'HomePage'
-    ord_mapping = {key:val for key, val in sorted(mapping.items())}
-    return render_template('index.html',
-                            title=title,
-                            stocks=ord_mapping)
 
 class Security():
     def __init__(self, ticker):
@@ -37,18 +45,18 @@ class Security():
         self.ord_mapping = {key:val for key, val in sorted(mapping.items())}
 
     def build_security(self):
+        form = MyForm()
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
 
         script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
         script2 = Build_graph(self.ticker, (dates, 'hist')).regression_graph()
 
         articles, match_val = self.Articles(self.news_api_key)
-        
+
         if self.ticker in mapping.keys():
             template = 'securities/' + self.ticker + '.html'
         else:
             template = 'securities/Security_Template.html'
-
         if request.method == 'POST':
             dates = self.build_range_dates()
             if dates[0] is True:
@@ -61,7 +69,8 @@ class Security():
                                         error=dates[0],
                                         error_msg=dates[1],
                                         company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
+                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios(),
+                                        form=form)
             elif dates[0] == None:
                 return render_template(template_name_or_list=template,
                                         title=match_val,
@@ -70,7 +79,8 @@ class Security():
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
+                                        financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios(),
+                                        form=form)
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
                 script2 = Build_graph(self.ticker, dates).regression_graph()
@@ -81,41 +91,11 @@ class Security():
                                 articles=articles,
                                 stocks=self.ord_mapping,
                                 company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-                                financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
-
-    # def build_security_general(self):
-    #     dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
-    #
-    #     script1 = Build_graph(self.ticker, (dates, 'hist')).price_graph()
-    #     script2 = Build_graph(self.ticker, (dates, 'hist')).regression_graph()
-    #
-    #     articles = self.Articles(self.news_api_key)
-    #      # <script> $(document).ready(function() {
-    #      #       plot($$(price), 'price')
-    #      #       });
-    #      # </script>
-    #      # <script> $(document).ready(function() {
-    #      #       plot($$(regress), 'regression')
-    #      #       });
-    #      # </script>
-    #     # print(Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
-    #     return render_template('securities/Security_Template2.html',
-    #                             title=self.ticker,
-    #                             price=script1,
-    #                             regress=script2,
-    #                             articles=articles,
-    #                             stocks=self.ord_mapping,
-    #                             company_info=Security_Portfolio_data(self.ticker, ('','')).get_company_info(),
-    #                             financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
-    #     # return Security_Template.substitute(title=self.ticker,
-    #     #                                     # price=script1,
-    #     #                                     # regress=script2,
-    #     #                                     articles=articles,
-    #     #                                     stocks=self.ord_mapping,
-    #     #                                     company_info=Security_Portfolio_data(self.ticker, ('', '')).get_company_info(),
-    #     #                                     financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios())
+                                financial_info=Security_Portfolio_data(self.ticker, ('','')).get_financial_ratios(),
+                                form=form)
 
     def build_index(self):
+        form = MyForm()
         # Get Sector performances here for SPX, etc.
         dates = (self.monthdelta(pd.to_datetime('today'), -1).strftime('%Y-%m-%d'), pd.to_datetime('today').strftime('%Y-%m-%d'))
 
@@ -131,21 +111,25 @@ class Security():
                                         articles=articles,
                                         stocks=self.ord_mapping,
                                         error=dates[0],
-                                        error_msg=dates[1])
+                                        error_msg=dates[1],
+                                        form=form)
             elif dates[0] == None:
                 return render_template('indices/' + self.ticker + '.html',
                                         title=self.ticker,
                                         price=script1,
                                         articles=articles,
-                                        stocks=self.ord_mapping)
+                                        stocks=self.ord_mapping,
+                                        form=form)
             else:
                 script1 = Build_graph(self.ticker, dates).price_graph()
         return render_template('indices/' + self.ticker + '.html',
                                 title=self.ticker,
                                 price=script1,
                                 articles=articles,
-                                stocks=self.ord_mapping)
+                                stocks=self.ord_mapping,
+                                form=form)
     def build_portfolio(self):
+        form = MyForm()
         if request.method == 'POST':
             dates = self.build_range_dates()
             weights = { ticker:weight for ticker, weight in request.form.to_dict().items() if ticker not in ['date1', 'date2', 'Get_Weights', 'num_portfolios'] }
@@ -158,7 +142,8 @@ class Security():
                                         title='Create / View portfolio',
                                         error=dates[0],
                                         error_msg=dates[1],
-                                        stocks=self.ord_mapping)
+                                        stocks=self.ord_mapping,
+                                        form=form)
             elif dates[0] != None and weights != None:
 
                 script1, data_dict = Build_graph('', dates).portfolio_graph(weights, num_portfolios)
@@ -170,19 +155,22 @@ class Security():
                                             graph=script1,
                                             rand_data=rand_ports,
                                             user_data=user_port,
-                                            stocks=self.ord_mapping)
+                                            stocks=self.ord_mapping,
+                                            form=form)
                 except:
                     rand_ports = data_dict['rand_ports']
                     return render_template('portfolio/create.html',
                                             title='Create / View portfolio',
                                             graph=script1,
                                             rand_data=rand_ports,
-                                            stocks=self.ord_mapping)
+                                            stocks=self.ord_mapping,
+                                            form=form)
             else:
                 pass
         return render_template('portfolio/create.html',
                                 title='Create / View portfolio',
-                                stocks=self.ord_mapping)
+                                stocks=self.ord_mapping,
+                                form=form)
 
     def build_range_dates(self):
         range_dates = request.form
@@ -228,6 +216,18 @@ class Security():
         # Must check for total results to determine page number in get_everything request
 
         match_val = Security_Portfolio_data(self.ticker, ('', '')).get_match_val()
+        # Session = sessionmaker(bind=engine)
+        # s = Session()
+        # try:
+        #     s.bulk_insert_mappings(Securities, data_dict)
+        # except:
+        #     s.rollback()
+        #     s.bulk_update_mappings(Securities, data_dict)
+        # s.flush()
+        # s.commit()
+        # s.close()
+
+
         days_10_prev = (datetime.today() - timedelta(10)).strftime("%Y-%m-%d")
         yesterday = (datetime.today() - timedelta(1)).strftime("%Y-%m-%d")
         all_articles = newsapi.get_everything(q = match_val, # Required to be company name
@@ -244,50 +244,77 @@ class Security():
             return None, match_val
         return frame[['title', 'description', 'url', 'urlToImage']], match_val
 
+def create_app():
+    app = Flask(__name__)
 
-@app.route('/indices/SPX', methods = ['GET', 'POST'])
-def SPX(ticker = 'SPX'):
-    return Security(ticker).build_index()
+    app.config['WTF_CSRF_ENABLED'] = True
+    app.config['SECRET_KEY'] = 'first_time_for_everything'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db/SecuritiesIndexDB.db'
+    # engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
+    db.init_app(app)
 
-@app.route('/indices/DJIA', methods = ['GET', 'POST'])
-def DJIA(ticker = 'DJIA'):
-    return Security(ticker).build_index()
+    @app.route('/')
+    @app.route('/index')
+    # Creates association between URL given as argument and function
+    # Assigning two of them, Flask requests either of two URLs and returns value of function
+    def index():
+        title = 'HomePage'
+        ord_mapping = {key:val for key, val in sorted(mapping.items())}
+        return render_template('index.html',
+        title=title,
+        stocks=ord_mapping)
 
-@app.route('/securities/<some_ticker>', methods = ['GET', 'POST'])
-def security_page(some_ticker):
-    return Security(some_ticker).build_security()
+    @app.route('/indices/SPX', methods = ['GET', 'POST'])
+    def SPX(ticker = 'SPX'):
+        return Security(ticker).build_index()
 
-@app.route('/securities/FB', methods = ['GET', 'POST'])
-def FB(ticker = 'FB'):
-    return Security(ticker).build_security()
+    @app.route('/indices/DJIA', methods = ['GET', 'POST'])
+    def DJIA(ticker = 'DJIA'):
+        return Security(ticker).build_index()
 
-@app.route('/securities/MSFT', methods = ['GET', 'POST'])
-def MSFT(ticker = 'MSFT'):
-    return Security(ticker).build_security()
+    @app.route('/securities/<some_ticker>', methods = ['GET', 'POST'])
+    def security_page(some_ticker):
+        return Security(some_ticker).build_security()
 
-@app.route('/securities/UAA', methods = ['GET', 'POST'])
-def UAA(ticker = 'UAA'):
-    return Security(ticker).build_security()
+    @app.route('/securities/FB', methods = ['GET', 'POST'])
+    def FB(ticker = 'FB'):
+        return Security(ticker).build_security()
 
-@app.route('/securities/AMZN', methods = ['GET', 'POST'])
-def AMZN(ticker = 'AMZN'):
-    return Security(ticker).build_security()
+    @app.route('/securities/MSFT', methods = ['GET', 'POST'])
+    def MSFT(ticker = 'MSFT'):
+        return Security(ticker).build_security()
 
-@app.route('/securities/AAPL', methods = ['GET', 'POST'])
-def AAPL(ticker = 'AAPL'):
-    return Security(ticker).build_security()
+    @app.route('/securities/UAA', methods = ['GET', 'POST'])
+    def UAA(ticker = 'UAA'):
+        return Security(ticker).build_security()
 
-@app.route('/securities/GOOGL', methods = ['GET', 'POST'])
-def GOOGL(ticker = 'GOOGL'):
-    return Security(ticker).build_security()
+    @app.route('/securities/AMZN', methods = ['GET', 'POST'])
+    def AMZN(ticker = 'AMZN'):
+        return Security(ticker).build_security()
 
-@app.route('/securities/TSLA', methods=['GET', 'POST'])
-def TSLA(ticker = 'TSLA'):
-    return Security(ticker).build_security()
+    @app.route('/securities/AAPL', methods = ['GET', 'POST'])
+    def AAPL(ticker = 'AAPL'):
+        return Security(ticker).build_security()
 
-@app.route('/portfolio/create', methods=['GET', 'POST'])
-def create_portfolio():
-    return Security('').build_portfolio()
+    @app.route('/securities/GOOGL', methods = ['GET', 'POST'])
+    def GOOGL(ticker = 'GOOGL'):
+        return Security(ticker).build_security()
 
-if __name__ == '__main__':
-    app.run()
+    @app.route('/securities/TSLA', methods=['GET', 'POST'])
+    def TSLA(ticker = 'TSLA'):
+        return Security(ticker).build_security()
+
+    @app.route('/portfolio/create', methods=['GET', 'POST'])
+    def create_portfolio():
+        return Security('').build_portfolio()
+
+    @app.route('/securities')
+    def securities_dict():
+        result = Security_db.query.all()
+        list_securities = [res.as_dict() for res in result]
+        return jsonify(list_securities)
+
+    return app
+#
+# if __name__ == '__main__':
+#     app.run()
