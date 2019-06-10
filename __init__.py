@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, url_for, redirect, jsonify
 
 try:
-    from FlaskApp.graph import Build_graph, Security_Portfolio_data
+    from .graph import Build_graph, Security_Portfolio_data
 except:
     from Web_Project.graph import Build_graph, Security_Portfolio_data
 from datetime import datetime, timedelta
@@ -236,7 +236,10 @@ def create_app():
     db = SQLAlchemy()
 
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'], echo=True)
-    from .models import Securities
+    try:
+        from .models import Securities
+    except:
+        from Web_Project.models import Securities
     with app.test_request_context():
         db.init_app(app)
         db.create_all()
