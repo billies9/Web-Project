@@ -20,15 +20,16 @@
   <script src='https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js'></script>
   <script src='https://cdn.datatables.net/buttons/1.5.6/js/buttons.html5.min.js'></script>
   <script src='https://cdn.datatables.net/buttons/1.5.6/js/buttons.print.min.js'></script>
+
+  <script type='text/javascript' src="{{ url_for('static', filename='js/init_datatables.js') }}"></script>
+  <script>$(document).ready( function () {
+      init_datatables('#rand_ports_table', false)
+    });
+  </script>
   <script>
     $(document).ready( function () {
-        $('#rand_ports_table').DataTable({
-          dom:'Bfrtip',
-          buttons: ['copy', 'csv', 'excel', 'pdf', 'print'],
-          scrollX: true
-          // lengthMenu: [[10, 25, 50, -1], [10, 25, 50, 'All']]
-        });
-    } );
+      init_datatables('#user_port_table', true)
+    });
   </script>
 {% endblock %}
 
@@ -143,11 +144,39 @@
       </div>
       <div id='statistics' class='collapse show' aria-labelledby='statisticsHeading' data-parent='#accordion'>
         <div class='card-body'>
-          {% if user_data %}
+          {% if user_data is defined %}
           <!-- Write in user_data -->
-            <div>
+            <div class='table-responsive'>
               <h5>User Created Portfolio</h5>
-              {{ table_data['user_port'] }}
+              <table id='user_port_table', class='display dataTable'>
+                <thead>
+                  <tr>
+                    <th class='sorting_asc'>
+                      Portfolio Number
+                    </th>
+                    {% for column in user_data.columns %}
+                      <th class='sorting'>
+                        {{ column }}
+                      </th>
+                    {% endfor %}
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for idx, data in user_data.iterrows() %}
+                    <tr>
+                      <td>
+                        {{ idx + 1}}
+                      </td>
+                      {% for column in user_data.columns %}
+                        <td>
+                          {{ user_data.loc[idx, column] }}
+                        </td>
+                      {% endfor %}
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {{ user_port }}
             </div>
           {% endif %}
           <!-- Always write in rand_data -->
