@@ -1,6 +1,9 @@
 from flask import Flask, render_template, request, url_for, redirect, jsonify
 
-from FlaskApp.graph import Build_graph, Security_Portfolio_data
+try:
+    from FlaskApp.graph import Build_graph, Security_Portfolio_data
+except:
+    from Web_Project.graph import Build_graph, Security_Portfolio_data
 from datetime import datetime, timedelta
 import requests
 import pandas as pd
